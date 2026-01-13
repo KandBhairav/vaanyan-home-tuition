@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Details - Vaanyan Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: var(--gray-50);
+        }
+        .admin-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+        .page-content {
+            padding: 2rem 0;
+        }
+        .user-profile {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--gray-200);
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .profile-info h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .role-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--gradient-primary);
+            color: var(--white);
+            border-radius: var(--radius-lg);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        .info-item {
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+        }
+        .info-label {
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+        .info-value {
+            color: var(--gray-900);
+        }
+        .connections-section {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+        }
+        .chat-section {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+        }
+        .chat-messages {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+        }
+        .message {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .message.admin {
+            flex-direction: row-reverse;
+        }
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .message-bubble {
+            background: var(--white);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-lg);
+            max-width: 70%;
+        }
+        .message.admin .message-bubble {
+            background: var(--gradient-primary);
+            color: var(--white);
+        }
+        .message-text {
+            margin-bottom: 0.25rem;
+        }
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+        .chat-input-form {
+            display: flex;
+            gap: 1rem;
+        }
+        .chat-input {
+            flex: 1;
+            padding: 0.875rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+        }
+        .connection-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--gradient-primary);
+            color: var(--white);
+            border-radius: var(--radius-lg);
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fas fa-shield-alt" style="font-size: 1.5rem;"></i>
+                    <span style="font-size: 1.5rem; font-weight: 700;">Vaanyan Admin</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container page-content">
+        <!-- User Profile -->
+        <div class="user-profile">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    {{ user.first_name[0] }}{{ user.last_name[0] }}
+                </div>
+                <div class="profile-info">
+                    <h1>{{ user.first_name }} {{ user.last_name }}</h1>
+                    <span class="role-badge">
+                        {% if user.role == 'student' %}
+                        <i class="fas fa-user-graduate"></i> Student
+                        {% else %}
+                        <i class="fas fa-chalkboard-teacher"></i> Teacher
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-envelope"></i> Email</div>
+                    <div class="info-value">{{ user.email }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-phone"></i> Phone</div>
+                    <div class="info-value">{{ user.phone }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-calendar"></i> Registered</div>
+                    <div class="info-value">{{ user.created_at.strftime('%B %d, %Y') }}</div>
+                </div>
+                
+                {% if user.role == 'student' and user.student_profile %}
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-graduation-cap"></i> Grade</div>
+                    <div class="info-value">{{ user.student_profile.grade }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-book"></i> Board</div>
+                    <div class="info-value">{{ user.student_profile.board|upper }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-map-marker-alt"></i> City</div>
+                    <div class="info-value">{{ user.student_profile.city }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-book-open"></i> Subjects</div>
+                    <div class="info-value">{{ user.student_profile.subjects }}</div>
+                </div>
+                {% elif user.role == 'teacher' and user.teacher_profile %}
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-certificate"></i> Qualification</div>
+                    <div class="info-value">{{ user.teacher_profile.qualification }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-briefcase"></i> Experience</div>
+                    <div class="info-value">{{ user.teacher_profile.experience }} years</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-map-marker-alt"></i> City</div>
+                    <div class="info-value">{{ user.teacher_profile.city }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-rupee-sign"></i> Hourly Rate</div>
+                    <div class="info-value">₹{{ user.teacher_profile.hourly_rate }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-book-open"></i> Subjects</div>
+                    <div class="info-value">{{ user.teacher_profile.subjects }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-laptop"></i> Teaching Mode</div>
+                    <div class="info-value">{{ user.teacher_profile.teaching_mode }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Connections -->
+        <div class="connections-section">
+            <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem;">
+                <i class="fas fa-handshake"></i> Connections
+            </h2>
+            {% if connected_users %}
+                {% for connected in connected_users %}
+                <span class="connection-badge">
+                    {{ connected.first_name }} {{ connected.last_name }}
+                </span>
+                {% endfor %}
+            {% else %}
+                <p style="color: var(--gray-500);">No connections yet</p>
+            {% endif %}
+        </div>
+
+        <!-- Chat -->
+        <div class="chat-section">
+            <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem;">
+                <i class="fas fa-comments"></i> Chat with {{ user.first_name }}
+            </h2>
+            
+            <div class="chat-messages">
+                {% if messages %}
+                    {% for msg in messages %}
+                    <div class="message {% if msg.sender_id == current_user.id %}admin{% endif %}">
+                        <div class="message-avatar">
+                            {{ msg.sender.first_name[0] }}
+                        </div>
+                        <div class="message-bubble">
+                            <div class="message-text">{{ msg.message }}</div>
+                            <div class="message-time">{{ msg.created_at.strftime('%I:%M %p') }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: var(--gray-500); text-align: center;">No messages yet. Start the conversation!</p>
+                {% endif %}
+            </div>
+
+            <form method="POST" action="{{ url_for('admin_send_message', user_id=user.id) }}" class="chat-input-form">
+                <input type="text" name="message" class="chat-input" placeholder="Type your message..." required>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Send
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

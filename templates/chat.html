@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - Vaanyan Home Tuition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: var(--gray-50);
+        }
+        .chat-container {
+            display: flex;
+            height: calc(100vh - 80px);
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+            gap: 1rem;
+        }
+        
+        /* Sidebar */
+        .chat-sidebar {
+            width: 320px;
+            background: var(--white);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 2px solid var(--gray-100);
+        }
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        .chat-item {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--gray-100);
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .chat-item:hover {
+            background: var(--gray-50);
+        }
+        .chat-item.active {
+            background: var(--gradient-primary);
+            color: var(--white);
+        }
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 1.25rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .chat-item.active .chat-avatar {
+            background: var(--white);
+            color: var(--royal-purple);
+        }
+        .chat-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .chat-item-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .chat-item-last {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .chat-item.active .chat-item-last {
+            opacity: 1;
+        }
+        
+        /* Main Chat Area */
+        .chat-main {
+            flex: 1;
+            background: var(--white);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            padding: 1.5rem;
+            border-bottom: 2px solid var(--gray-100);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--gradient-primary);
+            color: var(--white);
+            border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        }
+        .chat-header-avatar {
+            width: 50px;
+            height: 50px;
+            background: var(--white);
+            color: var(--royal-purple);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        .chat-header-info h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+        .chat-header-status {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+        
+        /* Messages Area */
+        .chat-messages {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: var(--gray-50);
+        }
+        .message {
+            display: flex;
+            gap: 1rem;
+            animation: slideInUp 0.3s;
+        }
+        .message.sent {
+            flex-direction: row-reverse;
+        }
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .message-content {
+            max-width: 60%;
+        }
+        .message-bubble {
+            background: var(--white);
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+        }
+        .message.sent .message-bubble {
+            background: var(--gradient-primary);
+            color: var(--white);
+        }
+        .message-text {
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+        
+        /* Input Area */
+        .chat-input-area {
+            padding: 1.5rem;
+            border-top: 2px solid var(--gray-100);
+            background: var(--white);
+            border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+        }
+        .chat-input-form {
+            display: flex;
+            gap: 1rem;
+        }
+        .chat-input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-xl);
+            font-size: 1rem;
+            font-family: inherit;
+            resize: none;
+        }
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--royal-purple);
+        }
+        .chat-send-btn {
+            width: 55px;
+            height: 55px;
+            background: var(--gradient-primary);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-royal);
+        }
+        .chat-send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.4);
+        }
+        
+        /* Empty State */
+        .chat-empty {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            color: var(--gray-500);
+        }
+        .chat-empty i {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            color: var(--gray-300);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chat-sidebar {
+                display: none;
+            }
+            .message-content {
+                max-width: 80%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="{{ url_for('home') }}" class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    Vaanyan Home Tuition
+                </a>
+                <nav class="nav">
+                    {% if current_user.role == 'student' %}
+                    <a href="{{ url_for('student_dashboard') }}" class="nav-link">Dashboard</a>
+                    {% else %}
+                    <a href="{{ url_for('teacher_dashboard') }}" class="nav-link">Dashboard</a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="chat-container">
+        <!-- Sidebar -->
+        <div class="chat-sidebar">
+            <div class="sidebar-header">
+                <h2>Messages</h2>
+                <p style="color: var(--gray-600); font-size: 0.9rem;">Your conversations</p>
+            </div>
+            <div class="chat-list">
+                {% if conversations and conversations|length > 0 %}
+                    {% for conv in conversations %}
+                    <div class="chat-item {% if conv.id == active_conversation_id %}active{% endif %}" onclick="window.location.href='{{ url_for('chat', partner_id=conv.partner.id) }}'">
+                        <div class="chat-avatar">
+                            {{ conv.partner.first_name[0] }}{{ conv.partner.last_name[0] }}
+                        </div>
+                        <div class="chat-item-info">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                                <div class="chat-item-name">{{ conv.partner.first_name }} {{ conv.partner.last_name }}</div>
+                                {% if conv.unread_count > 0 %}
+                                <span style="background: var(--royal-gold); color: var(--white); padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.7rem; font-weight: 700; min-width: 18px; text-align: center;">
+                                    {{ conv.unread_count }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="chat-item-last">{{ conv.last_message[:30] }}...</div>
+                            {% if conv.last_message_time %}
+                            <div style="font-size: 0.7rem; opacity: 0.6; margin-top: 0.25rem;">
+                                {% set now = conv.last_message_time.utcnow() %}
+                                {% set diff_seconds = (now - conv.last_message_time).total_seconds() %}
+                                {% if diff_seconds < 60 %}
+                                    Just now
+                                {% elif diff_seconds < 3600 %}
+                                    {{ (diff_seconds // 60)|int }} min ago
+                                {% elif diff_seconds < 86400 %}
+                                    {{ (diff_seconds // 3600)|int }}h ago
+                                {% else %}
+                                    {{ (diff_seconds // 86400)|int }}d ago
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="padding: 2rem; text-align: center; color: var(--gray-500);">
+                        <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                        <p>No conversations yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Main Chat -->
+        <div class="chat-main">
+            {% if partner %}
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <div class="chat-header-avatar">
+                    {{ partner.first_name[0] }}{{ partner.last_name[0] }}
+                </div>
+                <div class="chat-header-info">
+                    <h3>{{ partner.first_name }} {{ partner.last_name }}</h3>
+                    <div class="chat-header-status">
+                        <i class="fas fa-circle" style="font-size: 0.5rem;"></i> 
+                        {{ 'Student' if partner.role == 'student' else 'Teacher' }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="chat-messages" id="chatMessages">
+                {% if messages and messages|length > 0 %}
+                    {% for msg in messages %}
+                    <div class="message {% if msg.sender_id == current_user.id %}sent{% endif %}">
+                        <div class="message-avatar">
+                            {{ msg.sender.first_name[0] }}
+                        </div>
+                        <div class="message-content">
+                            <div class="message-bubble">
+                                <div class="message-text">{{ msg.message }}</div>
+                                <div class="message-time">{{ msg.created_at.strftime('%I:%M %p') }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align: center; color: var(--gray-500); margin: auto;">
+                        <i class="fas fa-comments" style="font-size: 4rem; opacity: 0.2; margin-bottom: 1rem;"></i>
+                        <p>No messages yet. Start the conversation!</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Input Area -->
+            <div class="chat-input-area">
+                <form method="POST" action="{{ url_for('send_message') }}" class="chat-input-form">
+                    <input type="hidden" name="recipient_id" value="{{ partner.id }}">
+                    <textarea name="message" class="chat-input" rows="1" placeholder="Type your message..." required></textarea>
+                    <button type="submit" class="chat-send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="chat-empty">
+                <i class="fas fa-comments"></i>
+                <h3>Select a conversation</h3>
+                <p>Choose a tutor or student to start chatting</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Auto-scroll to bottom
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Auto-resize textarea
+        const textarea = document.querySelector('.chat-input');
+        if (textarea) {
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Tutor - Vaanyan Home Tuition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: var(--gray-50);
+        }
+        .request-page {
+            min-height: 100vh;
+            padding: 3rem 1rem;
+        }
+        .request-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: var(--radius-2xl);
+            padding: 3rem;
+            box-shadow: var(--shadow-xl);
+        }
+        .request-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .request-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 2.5rem;
+            margin: 0 auto 1.5rem;
+        }
+        .request-header h2 {
+            font-size: 2rem;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+        .tutor-preview {
+            background: var(--gray-50);
+            padding: 1.5rem;
+            border-radius: var(--radius-xl);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .tutor-preview-avatar {
+            width: 70px;
+            height: 70px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+        .tutor-preview-info h3 {
+            font-size: 1.5rem;
+            color: var(--gray-900);
+            margin-bottom: 0.25rem;
+        }
+        .tutor-preview-meta {
+            display: flex;
+            gap: 1rem;
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--gray-700);
+        }
+        .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--royal-purple);
+        }
+        .info-box {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid var(--royal-purple);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .info-box p {
+            color: var(--gray-700);
+            font-size: 0.95rem;
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="request-page">
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="{{ url_for('home') }}" class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    Vaanyan Home Tuition
+                </a>
+                <nav class="nav">
+                    <a href="{{ url_for('student_dashboard') }}" class="nav-link">Dashboard</a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="request-container">
+        <div class="request-header">
+            <div class="request-icon">
+                <i class="fas fa-paper-plane"></i>
+            </div>
+            <h2>Request Tutor</h2>
+            <p>Send a request to connect with this tutor</p>
+        </div>
+
+        <!-- Tutor Preview -->
+        <div class="tutor-preview">
+            <div class="tutor-preview-avatar">
+                {{ teacher.first_name[0] }}{{ teacher.last_name[0] }}
+            </div>
+            <div class="tutor-preview-info">
+                <h3>{{ teacher.first_name }} {{ teacher.last_name }}</h3>
+                <div class="tutor-preview-meta">
+                    <span><i class="fas fa-graduation-cap"></i> {{ teacher.teacher_profile.qualification }}</span>
+                    <span><i class="fas fa-map-marker-alt"></i> {{ teacher.teacher_profile.city }}</span>
+                    <span><i class="fas fa-rupee-sign"></i> ₹{{ teacher.teacher_profile.hourly_rate }}/hr</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+            <p><i class="fas fa-info-circle"></i> Your request will be sent to the tutor. They can accept or decline based on their availability.</p>
+        </div>
+
+        <!-- Request Form -->
+        <form method="POST" action="{{ url_for('send_tutor_request') }}">
+            <input type="hidden" name="teacher_id" value="{{ teacher.id }}">
+
+            <div class="form-group">
+                <label for="subject"><i class="fas fa-book"></i> Which subject do you need help with? *</label>
+                <select name="subject" id="subject" required>
+                    <option value="">Select Subject</option>
+                    {% for subject in teacher.teacher_profile.subjects.split(',') %}
+                    <option value="{{ subject }}">{{ subject|title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="message"><i class="fas fa-comment"></i> Message to Tutor (Optional)</label>
+                <textarea name="message" id="message" rows="5" placeholder="Tell the tutor about your learning goals, schedule preferences, or any specific requirements..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full btn-lg">
+                <i class="fas fa-paper-plane"></i> Send Request
+            </button>
+
+            <div style="text-align: center; margin-top: 1rem;">
+                <a href="{{ url_for('find_tutors') }}" style="color: var(--gray-600); text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i> Back to Search
+                </a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

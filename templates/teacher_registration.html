@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Registration - Vaanyan Home Tuition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .registration-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+            padding: 3rem 1rem;
+        }
+        .registration-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: var(--radius-2xl);
+            padding: 3rem;
+            box-shadow: var(--shadow-xl);
+        }
+        .registration-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .reg-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 2.5rem;
+            margin: 0 auto 1.5rem;
+        }
+        .registration-header h2 {
+            font-size: 2rem;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--gray-700);
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--royal-purple);
+        }
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+        .subject-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+        }
+        .subject-checkbox input {
+            width: auto;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+        .alert {
+            padding: 1rem;
+            border-radius: var(--radius-lg);
+            margin-bottom: 1rem;
+        }
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="registration-page">
+    <div class="registration-container">
+        <div class="registration-header">
+            <div class="reg-icon">
+                <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+            <h2>Teacher Registration</h2>
+            <p>Join Vaanyan Home Tuition as a Teacher</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('teacher_registration') }}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="first_name">First Name *</label>
+                    <input type="text" id="first_name" name="first_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="last_name">Last Name *</label>
+                    <input type="text" id="last_name" name="last_name" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number *</label>
+                <input type="tel" id="phone" name="phone" required placeholder="+91 98765 43210">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="qualification">Qualification *</label>
+                    <select id="qualification" name="qualification" required>
+                        <option value="">Select Qualification</option>
+                        <option value="bachelors">Bachelor's Degree</option>
+                        <option value="masters">Master's Degree</option>
+                        <option value="phd">PhD</option>
+                        <option value="diploma">Diploma</option>
+                        <option value="b.ed">B.Ed</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="experience">Teaching Experience *</label>
+                    <select id="experience" name="experience" required>
+                        <option value="">Select Experience</option>
+                        <option value="0-1">Less than 1 year</option>
+                        <option value="1-3">1-3 years</option>
+                        <option value="3-5">3-5 years</option>
+                        <option value="5-10">5-10 years</option>
+                        <option value="10+">10+ years</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="city">City *</label>
+                <input type="text" id="city" name="city" required placeholder="e.g., Dehradun">
+            </div>
+
+            <div class="form-group">
+                <label for="address">Complete Address *</label>
+                <textarea id="address" name="address" rows="3" required placeholder="Enter your full address"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Teaching Mode *</label>
+                <div class="subjects-grid">
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="teaching_mode" value="home_tuition">
+                        <span>Home Tuition (Visit Student)</span>
+                    </label>
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="teaching_mode" value="online">
+                        <span>Online Classes</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Select Subjects You Can Teach *</label>
+                <div class="subjects-grid">
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="subjects" value="mathematics">
+                        <span>Mathematics</span>
+                    </label>
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="subjects" value="physics">
+                        <span>Physics</span>
+                    </label>
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="subjects" value="chemistry">
+                        <span>Chemistry</span>
+                    </label>
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="subjects" value="biology">
+                        <span>Biology</span>
+                    </label>
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="subjects" value="english">
+                        <span>English</span>
+                    </label>
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="subjects" value="hindi">
+                        <span>Hindi</span>
+                    </label>
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="subjects" value="social_science">
+                        <span>Social Science</span>
+                    </label>
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="subjects" value="computer">
+                        <span>Computer Science</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="hourly_rate">Hourly Rate (₹) *</label>
+                <input type="number" id="hourly_rate" name="hourly_rate" required min="100" max="5000" placeholder="e.g., 500">
+                <small style="color: var(--gray-600); display: block; margin-top: 0.25rem;">Platform charges 10% commission</small>
+            </div>
+
+            <div class="form-group">
+                <label for="bio">About You (Optional)</label>
+                <textarea id="bio" name="bio" rows="4" placeholder="Tell students about your teaching experience and approach..."></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="password">Password *</label>
+                    <input type="password" id="password" name="password" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password *</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="terms" required>
+                    <span>I agree to the <a href="{{ url_for('terms_and_conditions') }}" target="_blank" style="color: var(--royal-purple); font-weight: 600;">Terms & Conditions</a></span>
+                </label>
+            </div>
+<div class="form-group">
+    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+        <input type="checkbox" name="terms" required style="width: auto; cursor: pointer;">
+        <span>I agree to the <a href="{{ url_for('terms_teacher') }}" target="_blank" style="color: var(--royal-purple); text-decoration: underline;">Terms and Conditions</a></span>
+    </label>
+</div>
+            <button type="submit" class="btn btn-primary btn-full btn-lg">
+                <i class="fas fa-user-plus"></i> Create Teacher Account
+            </button>
+
+            <div style="text-align: center; margin-top: 1.5rem; color: var(--gray-600);">
+                Already have an account? <a href="{{ url_for('login') }}" style="color: var(--royal-purple); font-weight: 600;">Login</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration - Vaanyan Home Tuition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .registration-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+            padding: 3rem 1rem;
+        }
+        .registration-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: var(--radius-2xl);
+            padding: 3rem;
+            box-shadow: var(--shadow-xl);
+        }
+        .registration-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .reg-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 2.5rem;
+            margin: 0 auto 1.5rem;
+        }
+        .registration-header h2 {
+            font-size: 2rem;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--gray-700);
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--royal-purple);
+        }
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+        .subject-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+        }
+        .subject-checkbox input {
+            width: auto;
+        }
+        .alert {
+            padding: 1rem;
+            border-radius: var(--radius-lg);
+            margin-bottom: 1rem;
+        }
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="registration-page">
+    <div class="registration-container">
+        <div class="registration-header">
+            <div class="reg-icon">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <h2>Student Registration</h2>
+            <p>Join Vaanyan Home Tuition as a Student</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('student_registration') }}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="first_name">First Name *</label>
+                    <input type="text" id="first_name" name="first_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="last_name">Last Name *</label>
+                    <input type="text" id="last_name" name="last_name" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number *</label>
+                <input type="tel" id="phone" name="phone" required placeholder="+91 98765 43210">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="grade">Grade/Class *</label>
+                    <select id="grade" name="grade" required>
+                        <option value="">Select Grade</option>
+                        <option value="1">Class 1</option>
+                        <option value="2">Class 2</option>
+                        <option value="3">Class 3</option>
+                        <option value="4">Class 4</option>
+                        <option value="5">Class 5</option>
+                        <option value="6">Class 6</option>
+                        <option value="7">Class 7</option>
+                        <option value="8">Class 8</option>
+                        <option value="9">Class 9</option>
+                        <option value="10">Class 10</option>
+                        <option value="11">Class 11</option>
+                        <option value="12">Class 12</option>
+                        <option value="college">College</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="board">Board *</label>
+                    <select id="board" name="board" required>
+                        <option value="">Select Board</option>
+                        <option value="cbse">CBSE</option>
+                        <option value="icse">ICSE</option>
+                        <option value="state">State Board</option>
+                        <option value="ib">IB</option>
+                        <option value="igcse">IGCSE</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="city">City *</label>
+                <input type="text" id="city" name="city" required placeholder="e.g., Dehradun">
+            </div>
+
+            <div class="form-group">
+                <label for="address">Complete Address *</label>
+                <textarea id="address" name="address" rows="3" required placeholder="Enter your full address"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Select Subjects *</label>
+                <div class="subjects-grid">
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="subjects" value="mathematics">
+                        <span>Mathematics</span>
+                    </label>
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="subjects" value="physics">
+                        <span>Physics</span>
+                    </label>
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="subjects" value="chemistry">
+                        <span>Chemistry</span>
+                    </label>
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="subjects" value="biology">
+                        <span>Biology</span>
+                    </label>
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="subjects" value="english">
+                        <span>English</span>
+                    </label>
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="subjects" value="hindi">
+                        <span>Hindi</span>
+                    </label>
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="subjects" value="social_science">
+                        <span>Social Science</span>
+                    </label>
+                    <label class="subject-checkbox">
+                        <input type="checkbox" name="subjects" value="computer">
+                        <span>Computer Science</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="password">Password *</label>
+                    <input type="password" id="password" name="password" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password *</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+                </div>
+            </div>
+            <div class="form-group">
+    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+        <input type="checkbox" name="terms" required style="width: auto; cursor: pointer;">
+        <span>I agree to the <a href="{{ url_for('terms_student') }}" target="_blank" style="color: var(--royal-purple); text-decoration: underline;">Terms and Conditions</a></span>
+    </label>
+    </div>
+            <button type="submit" class="btn btn-primary btn-full btn-lg">
+                <i class="fas fa-user-plus"></i> Create Student Account
+            </button>
+
+            <div style="text-align: center; margin-top: 1.5rem; color: var(--gray-600);">
+                Already have an account? <a href="{{ url_for('login') }}" style="color: var(--royal-purple); font-weight: 600;">Login</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

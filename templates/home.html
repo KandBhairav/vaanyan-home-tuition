@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaanyan Home Tuition - Find Your Perfect Tutor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="{{ url_for('home') }}" class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    Vaanyan Home Tuition
+                </a>
+                <nav class="nav">
+                    <a href="#features" class="nav-link">Features</a>
+                    <a href="#about" class="nav-link">About</a>
+                    <a href="{{ url_for('choose_role') }}" class="btn btn-primary">Get Started</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>
+                        Find the Perfect <span class="highlight">Tutor</span><br>
+                        Right at Your Doorstep
+                    </h1>
+                    <p>Connect with experienced tutors for personalized home tuition. Learn at your own pace, in the comfort of your home.</p>
+                    <div class="hero-buttons">
+                        <a href="{{ url_for('choose_role') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-rocket"></i> Get Started
+                        </a>
+                        <a href="#features" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-play-circle"></i> Watch Demo
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Subject Icons -->
+    <section class="subjects">
+        <div class="container">
+            <div class="subjects-grid">
+                <div class="subject-item">
+                    <i class="fas fa-calculator"></i>
+                    <span>Mathematics</span>
+                </div>
+                <div class="subject-item">
+                    <i class="fas fa-flask"></i>
+                    <span>Science</span>
+                </div>
+                <div class="subject-item">
+                    <i class="fas fa-language"></i>
+                    <span>Languages</span>
+                </div>
+                <div class="subject-item">
+                    <i class="fas fa-laptop-code"></i>
+                    <span>Programming</span>
+                </div>
+                <div class="subject-item">
+                    <i class="fas fa-music"></i>
+                    <span>Music</span>
+                </div>
+                <div class="subject-item">
+                    <i class="fas fa-palette"></i>
+                    <span>Arts</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Why Choose Vaanyan Home Tuition?</h2>
+                <p class="section-subtitle">Experience the future of personalized education</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <h3>Home Comfort</h3>
+                    <p>Learn in the comfort and safety of your own home environment. No travel stress, just focused learning.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h3>Expert Tutors</h3>
+                    <p>Verified and experienced tutors across all subjects and grades. Quality education guaranteed.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3>Flexible Timing</h3>
+                    <p>Schedule classes according to your convenience and availability. Learn at your own pace.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>Direct Communication</h3>
+                    <p>Chat directly with tutors to discuss requirements and schedules. Clear communication always.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h3>Local Tutors</h3>
+                    <p>Find tutors in your city - Dehradun, Delhi, Mumbai and more. Or choose online classes.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Secure Payments</h3>
+                    <p>Safe and secure payment gateway with UPI, cards, and net banking options.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number">1000+</span>
+                    <span class="stat-label">Happy Students</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">500+</span>
+                    <span class="stat-label">Expert Tutors</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">50+</span>
+                    <span class="stat-label">Subjects</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">98%</span>
+                    <span class="stat-label">Success Rate</span>
+                </div>
+            </div>
+        </div>
+    </section>
+                <div class="footer-section">
+                    <h5><i class="fas fa-graduation-cap"></i> Vaanyan Home Tuition</h5>
+                    <p>Connecting students with the best tutors for personalized home education.</p>
+                </div>
+                <div class="footer-section">
+                    <h5>Quick Links</h5>
+                    <a href="{{ url_for('choose_role') }}" class="footer-link">Get Started</a>
+                    <a href="{{ url_for('login') }}" class="footer-link">Login</a>
+                    <a href="{{ url_for('terms_and_conditions') }}" class="footer-link">Terms & Conditions</a>
+                </div>
+                <div class="footer-section">
+                    <h5>Contact</h5>
+                    <p>Email: support@vaanyan.com</p>
+                    <p>Phone: +91 98976 03592</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Vaanyan Home Tuition. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

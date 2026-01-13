@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students Management - Vaanyan Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: var(--gray-50);
+        }
+        .admin-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+        .admin-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .page-content {
+            padding: 2rem 0;
+        }
+        .page-header {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+        }
+        .students-table {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead {
+            background: var(--gradient-primary);
+            color: var(--white);
+        }
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        tr:hover {
+            background: var(--gray-50);
+        }
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .user-avatar-table {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 700;
+        }
+        .teacher-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: var(--gradient-primary);
+            color: var(--white);
+            border-radius: var(--radius-lg);
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="container">
+            <div class="admin-header-content">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fas fa-shield-alt" style="font-size: 1.5rem;"></i>
+                    <span style="font-size: 1.5rem; font-weight: 700;">Vaanyan Admin</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container page-content">
+        <div class="page-header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">👨‍🎓 Students Management</h1>
+                    <p style="color: var(--gray-600);">Total Students: {{ student_data|length }}</p>
+                </div>
+                <a href="{{ url_for('export_students') }}" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Export CSV
+                </a>
+            </div>
+        </div>
+
+        <div class="students-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Grade/Board</th>
+                        <th>City</th>
+                        <th>Connected Teachers</th>
+                        <th>Classes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in student_data %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar-table">
+                                    {{ data.student.first_name[0] }}{{ data.student.last_name[0] }}
+                                </div>
+                                <div>
+                                    <strong>{{ data.student.first_name }} {{ data.student.last_name }}</strong>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ data.student.email }}</td>
+                        <td>{{ data.student.phone }}</td>
+                        <td>
+                            {% if data.student.student_profile %}
+                            {{ data.student.student_profile.grade }} - {{ data.student.student_profile.board|upper }}
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if data.student.student_profile %}
+                            {{ data.student.student_profile.city }}
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if data.teachers %}
+                                {% for teacher in data.teachers %}
+                                <span class="teacher-badge">{{ teacher.first_name }} {{ teacher.last_name }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span style="color: var(--gray-500);">No connections</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ data.total_classes }}</td>
+                        <td>
+                            <a href="{{ url_for('admin_user_detail', user_id=data.student.id) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

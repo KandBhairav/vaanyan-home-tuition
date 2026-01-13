@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Role - Vaanyan Home Tuition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="role-selection-page">
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="{{ url_for('home') }}" class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    Vaanyan Home Tuition
+                </a>
+                <nav class="nav">
+                    <a href="{{ url_for('home') }}" class="btn btn-secondary">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Role Selection Content -->
+    <div class="role-container">
+        <div class="role-content">
+            <div class="role-header">
+                <h1>Choose Your Path</h1>
+                <p>Are you here to learn or teach?</p>
+            </div>
+
+            <div class="role-cards">
+                <!-- Student Card -->
+                <div class="role-card">
+                    <div class="role-card-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h2>I'm a Student</h2>
+                    <ul class="role-features">
+                        <li><i class="fas fa-check-circle"></i> Find expert tutors in your city</li>
+                        <li><i class="fas fa-check-circle"></i> Browse by subjects and location</li>
+                        <li><i class="fas fa-check-circle"></i> Schedule flexible classes</li>
+                        <li><i class="fas fa-check-circle"></i> Chat with tutors directly</li>
+                        <li><i class="fas fa-check-circle"></i> Track your progress</li>
+                    </ul>
+                    <a href="{{ url_for('student_registration') }}" class="btn btn-primary btn-full">
+                        <i class="fas fa-arrow-right"></i> Continue as Student
+                    </a>
+                </div>
+
+                <!-- Teacher Card -->
+                <div class="role-card">
+                    <div class="role-card-icon">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h2>I'm a Teacher</h2>
+                    <ul class="role-features">
+                        <li><i class="fas fa-check-circle"></i> Connect with students in your area</li>
+                        <li><i class="fas fa-check-circle"></i> Set your subjects and rates</li>
+                        <li><i class="fas fa-check-circle"></i> Manage your schedule</li>
+                        <li><i class="fas fa-check-circle"></i> Receive requests from students</li>
+                        <li><i class="fas fa-check-circle"></i> Earn from teaching</li>
+                    </ul>
+                    <a href="{{ url_for('teacher_registration') }}" class="btn btn-primary btn-full">
+                        <i class="fas fa-arrow-right"></i> Continue as Teacher
+                    </a>
+                </div>
+            </div>
+
+            <div class="trust-section">
+                <div class="trust-badge">
+                    <i class="fas fa-shield-check"></i>
+                    <span>Verified Profiles</span>
+                </div>
+                <div class="trust-badge">
+                    <i class="fas fa-lock"></i>
+                    <span>Secure Platform</span>
+                </div>
+                <div class="trust-badge">
+                    <i class="fas fa-headset"></i>
+                    <span>24/7 Support</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
