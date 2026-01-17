@@ -18,6 +18,12 @@ app.config['SECRET_KEY'] = 'vaanyan-home-tuition-secret-key-2025'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///vaanyan_tuition.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Session Configuration (INFINITE LOGIN!)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)  # 1 year
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
 # Email Configuration
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
@@ -196,11 +202,14 @@ def login():
         
         session['user_id'] = user.id
         session['user_role'] = user.role
+        session.permanent = True  # INFINITE SESSION!
         
         flash(f'Welcome back, {user.first_name}!', 'success')
         
         if user.role == 'student':
             return redirect(url_for('student_dashboard'))
+        elif user.role == 'admin':
+            return redirect(url_for('admin_dashboard'))
         else:
             return redirect(url_for('teacher_dashboard'))
     
@@ -381,7 +390,6 @@ def student_dashboard():
     
     classes = []
     
-    # Count unread messages
     unread_messages = Message.query.filter_by(
         recipient_id=user.id,
         is_read=False
@@ -422,7 +430,6 @@ def teacher_dashboard():
     classes = []
     monthly_earnings = user.teacher_profile.total_earnings if user.teacher_profile else 0
     
-    # Count unread messages
     unread_messages = Message.query.filter_by(
         recipient_id=user.id,
         is_read=False
@@ -482,7 +489,6 @@ def send_tutor_request():
     
     user = get_current_user()
     
-    # Check if request already exists
     existing_request = TutorRequest.query.filter_by(
         student_id=user.id,
         teacher_id=teacher_id,
@@ -493,7 +499,6 @@ def send_tutor_request():
         flash('You already have a pending request with this tutor!', 'error')
         return redirect(url_for('student_dashboard'))
     
-    # Create tutor request
     if not message:
         message = f"Hi! I'm interested in learning {subject}. Can you help?"
     
@@ -539,7 +544,6 @@ def handle_request():
 def chat(partner_id=None):
     user = get_current_user()
     
-    # Get all conversations (accepted requests only)
     if user.role == 'student':
         accepted_requests = TutorRequest.query.filter_by(
             student_id=user.id,
@@ -553,7 +557,6 @@ def chat(partner_id=None):
         ).all()
         conversation_partners = [req.student for req in accepted_requests]
     
-    # Build conversations list - REMOVE DUPLICATES
     conversations = []
     seen_partners = set()
     
@@ -567,7 +570,6 @@ def chat(partner_id=None):
             ((Message.sender_id == partner.id) & (Message.recipient_id == user.id))
         ).order_by(Message.created_at.desc()).first()
         
-        # Count unread messages
         unread_count = Message.query.filter_by(
             sender_id=partner.id,
             recipient_id=user.id,
@@ -582,7 +584,6 @@ def chat(partner_id=None):
             'id': partner.id
         })
     
-    # Get current conversation
     partner = None
     messages = []
     if partner_id:
@@ -593,7 +594,6 @@ def chat(partner_id=None):
                 ((Message.sender_id == partner_id) & (Message.recipient_id == user.id))
             ).order_by(Message.created_at.asc()).all()
             
-            # Mark messages as read
             Message.query.filter_by(
                 sender_id=partner_id,
                 recipient_id=user.id,
@@ -620,7 +620,6 @@ def send_message():
         flash('Message cannot be empty', 'error')
         return redirect(url_for('chat'))
     
-    # Create message
     message = Message(
         sender_id=user.id,
         recipient_id=recipient_id,
@@ -645,73 +644,6 @@ def terms_student():
 def terms_teacher():
     return render_template('terms_teacher.html')
 
-@app.context_processor
-def inject_user():
-    return dict(current_user=get_current_user())
-
-# ===== ADMIN EXPORT ROUTES =====
-
-@app.route('/admin/export-students')
-def export_students():
-    """Export all students to CSV"""
-    students = User.query.filter_by(role='student').all()
-    
-    si = StringIO()
-    writer = csv.writer(si)
-    
-    # Header
-    writer.writerow(['Name', 'Email', 'Phone', 'Grade', 'Board', 'City', 'Subjects', 'Registered'])
-    
-    # Data
-    for student in students:
-        if student.student_profile:
-            writer.writerow([
-                f"{student.first_name} {student.last_name}",
-                student.email,
-                student.phone,
-                student.student_profile.grade,
-                student.student_profile.board,
-                student.student_profile.city,
-                student.student_profile.subjects,
-                student.created_at.strftime('%Y-%m-%d %H:%M')
-            ])
-    
-    output = make_response(si.getvalue())
-    output.headers["Content-Disposition"] = "attachment; filename=vaanyan_students.csv"
-    output.headers["Content-type"] = "text/csv"
-    return output
-
-@app.route('/admin/export-teachers')
-def export_teachers():
-    """Export all teachers to CSV"""
-    teachers = User.query.filter_by(role='teacher').all()
-    
-    si = StringIO()
-    writer = csv.writer(si)
-    
-    # Header
-    writer.writerow(['Name', 'Email', 'Phone', 'Qualification', 'Experience', 'City', 'Subjects', 'Rate', 'Registered'])
-    
-    # Data
-    for teacher in teachers:
-        if teacher.teacher_profile:
-            writer.writerow([
-                f"{teacher.first_name} {teacher.last_name}",
-                teacher.email,
-                teacher.phone,
-                teacher.teacher_profile.qualification,
-                teacher.teacher_profile.experience,
-                teacher.teacher_profile.city,
-                teacher.teacher_profile.subjects,
-                teacher.teacher_profile.hourly_rate,
-                teacher.created_at.strftime('%Y-%m-%d %H:%M')
-            ])
-    
-    output = make_response(si.getvalue())
-    output.headers["Content-Disposition"] = "attachment; filename=vaanyan_teachers.csv"
-    output.headers["Content-type"] = "text/csv"
-    return output
-
 # ===== ADMIN ROUTES =====
 
 @app.route('/admin/login', methods=['GET', 'POST'])
@@ -732,6 +664,7 @@ def admin_login():
         
         session['user_id'] = user.id
         session['user_role'] = user.role
+        session.permanent = True  # INFINITE SESSION!
         
         flash('Welcome Admin!', 'success')
         return redirect(url_for('admin_dashboard'))
@@ -747,13 +680,11 @@ def admin_dashboard():
         flash('Access denied', 'error')
         return redirect(url_for('home'))
     
-    # Stats
     total_students = User.query.filter_by(role='student').count()
     total_teachers = User.query.filter_by(role='teacher').count()
     total_connections = TutorRequest.query.filter_by(status='accepted').count()
     total_messages = Message.query.count()
     
-    # Recent registrations
     recent_students = User.query.filter_by(role='student').order_by(User.created_at.desc()).limit(5).all()
     recent_teachers = User.query.filter_by(role='teacher').order_by(User.created_at.desc()).limit(5).all()
     
@@ -777,7 +708,6 @@ def admin_students():
     
     students = User.query.filter_by(role='student').all()
     
-    # Get connection details for each student
     student_data = []
     for student in students:
         accepted_requests = TutorRequest.query.filter_by(
@@ -809,7 +739,6 @@ def admin_teachers():
     
     teachers = User.query.filter_by(role='teacher').all()
     
-    # Get connection details for each teacher
     teacher_data = []
     for teacher in teachers:
         accepted_requests = TutorRequest.query.filter_by(
@@ -844,7 +773,6 @@ def admin_user_detail(user_id):
     
     user = User.query.get_or_404(user_id)
     
-    # Get connections
     if user.role == 'student':
         connections = TutorRequest.query.filter_by(
             student_id=user.id,
@@ -858,7 +786,6 @@ def admin_user_detail(user_id):
         ).all()
         connected_users = [req.student for req in connections]
     
-    # Get messages
     messages = Message.query.filter(
         ((Message.sender_id == admin.id) & (Message.recipient_id == user_id)) |
         ((Message.sender_id == user_id) & (Message.recipient_id == admin.id))
@@ -894,6 +821,67 @@ def admin_send_message(user_id):
     
     return redirect(url_for('admin_user_detail', user_id=user_id))
 
+@app.context_processor
+def inject_user():
+    return dict(current_user=get_current_user())
+
+# ===== ADMIN EXPORT ROUTES =====
+
+@app.route('/admin/export-students')
+def export_students():
+    students = User.query.filter_by(role='student').all()
+    
+    si = StringIO()
+    writer = csv.writer(si)
+    
+    writer.writerow(['Name', 'Email', 'Phone', 'Grade', 'Board', 'City', 'Subjects', 'Registered'])
+    
+    for student in students:
+        if student.student_profile:
+            writer.writerow([
+                f"{student.first_name} {student.last_name}",
+                student.email,
+                student.phone,
+                student.student_profile.grade,
+                student.student_profile.board,
+                student.student_profile.city,
+                student.student_profile.subjects,
+                student.created_at.strftime('%Y-%m-%d %H:%M')
+            ])
+    
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = "attachment; filename=vaanyan_students.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
+
+@app.route('/admin/export-teachers')
+def export_teachers():
+    teachers = User.query.filter_by(role='teacher').all()
+    
+    si = StringIO()
+    writer = csv.writer(si)
+    
+    writer.writerow(['Name', 'Email', 'Phone', 'Qualification', 'Experience', 'City', 'Subjects', 'Rate', 'Registered'])
+    
+    for teacher in teachers:
+        if teacher.teacher_profile:
+            writer.writerow([
+                f"{teacher.first_name} {teacher.last_name}",
+                teacher.email,
+                teacher.phone,
+                teacher.teacher_profile.qualification,
+                teacher.teacher_profile.experience,
+                teacher.teacher_profile.city,
+                teacher.teacher_profile.subjects,
+                teacher.teacher_profile.hourly_rate,
+                teacher.created_at.strftime('%Y-%m-%d %H:%M')
+            ])
+    
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = "attachment; filename=vaanyan_teachers.csv"
+    output.headers["Content-type"] = "text/csv"
+    return output
+
 # ===== INITIALIZE DATABASE =====
 
 def create_sample_data():
@@ -902,7 +890,6 @@ def create_sample_data():
     
     print("Creating sample data...")
     
-    # Create sample teacher
     teacher1 = User(
         role='teacher',
         first_name='Rajesh',
@@ -928,7 +915,6 @@ def create_sample_data():
     )
     db.session.add(teacher1_profile)
     
-    # Create sample student
     student1 = User(
         role='student',
         first_name='Rahul',
@@ -966,10 +952,9 @@ if __name__ == '__main__':
     print("\n📧 Demo Accounts:")
     print("   Teacher: rajesh@vaanyan.com / password123")
     print("   Student: rahul@vaanyan.com / password123")
+    print("   Admin: mohapatravinayak26@gmail.com / Nitin@123")
     print("\n🌐 Open: http://127.0.0.1:8000")
-    print("\n📊 Export URLs:")
-    print("   Students: http://127.0.0.1:8000/admin/export-students")
-    print("   Teachers: http://127.0.0.1:8000/admin/export-teachers")
+    print("🌐 Live: https://vaanyan.com")
     print("="*50 + "\n")
     
-    app.run(debug=True, host='0.0.0.0', port=8000) 
+    app.run(debug=True, host='0.0.0.0', port=8000)
