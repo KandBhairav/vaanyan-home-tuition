@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make Payment - Vaanyan Home Tuition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: var(--gray-50); }
+        .page-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .page-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .back-link {
+            color: var(--white);
+            opacity: 0.9;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .back-link:hover { opacity: 1; }
+        .payment-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        .card-header {
+            background: var(--gray-50);
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            text-align: center;
+        }
+        .card-header h2 {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0;
+        }
+        .card-body { padding: 2rem; }
+        .amount-display {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 2rem;
+            border-radius: var(--radius-xl);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .amount-display .label {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+        .amount-display .amount {
+            font-size: 3.5rem;
+            font-weight: 800;
+        }
+        .billing-details {
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .billing-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .billing-row:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: var(--royal-purple);
+        }
+        .billing-row .label {
+            color: var(--gray-600);
+        }
+        .upi-section {
+            text-align: center;
+            padding: 2rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-xl);
+            margin-bottom: 2rem;
+        }
+        .upi-section h3 {
+            color: var(--gray-900);
+            margin-bottom: 1.5rem;
+        }
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background: var(--white);
+            border: 2px solid var(--gray-300);
+            border-radius: var(--radius-lg);
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .qr-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .upi-id-box {
+            background: var(--white);
+            border: 2px dashed var(--royal-purple);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .upi-id-box .label {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            margin-bottom: 0.5rem;
+        }
+        .upi-id-box .upi-id {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--royal-purple);
+            font-family: monospace;
+        }
+        .copy-btn {
+            background: var(--gradient-primary);
+            color: var(--white);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            transition: transform 0.2s;
+        }
+        .copy-btn:hover {
+            transform: scale(1.05);
+        }
+        .payment-apps {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .payment-app {
+            padding: 0.5rem 1rem;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            font-size: 0.85rem;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+        }
+        .upload-section {
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .upload-section:hover {
+            border-color: var(--royal-purple);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        .upload-section.dragover {
+            border-color: var(--royal-purple);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        .upload-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gray-100);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+            color: var(--gray-400);
+        }
+        .upload-section h3 {
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+        .upload-section p {
+            color: var(--gray-500);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .file-input {
+            display: none;
+        }
+        .preview-container {
+            margin-top: 1rem;
+            display: none;
+        }
+        .preview-container.show {
+            display: block;
+        }
+        .preview-image {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: var(--radius-lg);
+            border: 2px solid var(--success);
+            margin: 0 auto;
+        }
+        .steps-list {
+            background: var(--info-light);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .steps-list h4 {
+            color: #1e40af;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .steps-list ol {
+            margin: 0;
+            padding-left: 1.5rem;
+            color: #1e3a8a;
+        }
+        .steps-list li {
+            margin-bottom: 0.5rem;
+            list-style: decimal;
+        }
+        .warning-box {
+            background: var(--warning-light);
+            border: 1px solid var(--warning);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            margin-top: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+        .warning-box i {
+            color: var(--warning);
+            font-size: 1.25rem;
+            margin-top: 0.125rem;
+        }
+        .warning-box p {
+            margin: 0;
+            color: #92400e;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <div class="container">
+            <a href="{{ url_for('student_classes') }}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to My Classes
+            </a>
+            <h1><i class="fas fa-credit-card"></i> Make Payment</h1>
+            <p>Complete your payment to continue learning</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="payment-container">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem;">
+                        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Payment Amount -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-receipt"></i> Payment Summary</h2>
+                </div>
+                <div class="card-body">
+                    <div class="amount-display">
+                        <div class="label">Total Amount Due</div>
+                        <div class="amount">₹{{ cycle.total_amount }}</div>
+                    </div>
+
+                    <div class="billing-details">
+                        <div class="billing-row">
+                            <span class="label">Teacher</span>
+                            <span>{{ cycle.teacher.first_name }} {{ cycle.teacher.last_name }}</span>
+                        </div>
+                        <div class="billing-row">
+                            <span class="label">Total Classes</span>
+                            <span>{{ cycle.total_classes }} classes</span>
+                        </div>
+                        <div class="billing-row">
+                            <span class="label">Hourly Rate</span>
+                            <span>₹{{ cycle.teacher.teacher_profile.hourly_rate }}/hr</span>
+                        </div>
+                        <div class="billing-row">
+                            <span class="label">Period</span>
+                            <span>{{ cycle.start_date.strftime('%b %d') }} - {{ cycle.end_date.strftime('%b %d, %Y') if cycle.end_date else 'Present' }}</span>
+                        </div>
+                        <div class="billing-row">
+                            <span class="label">Total Amount</span>
+                            <span>₹{{ cycle.total_amount }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UPI Payment -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-mobile-alt"></i> Pay via UPI</h2>
+                </div>
+                <div class="card-body">
+                    <div class="steps-list">
+                        <h4><i class="fas fa-list-ol"></i> How to Pay</h4>
+                        <ol>
+                            <li>Open any UPI app (GPay, PhonePe, Paytm, etc.)</li>
+                            <li>Scan QR code or enter UPI ID below</li>
+                            <li>Enter amount: <strong>₹{{ cycle.total_amount }}</strong></li>
+                            <li>Complete payment</li>
+                            <li>Take screenshot of successful payment</li>
+                            <li>Upload screenshot below</li>
+                        </ol>
+                    </div>
+
+                    <div class="upi-section">
+                        <h3>Scan QR Code</h3>
+                        <div class="qr-placeholder">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa={{ upi_id }}&pn=Vaanyan%20Home%20Tuition&am={{ cycle.total_amount }}&cu=INR" alt="UPI QR Code">
+                        </div>
+                        
+                        <p style="color: var(--gray-500); margin-bottom: 1rem;">OR</p>
+                        
+                        <div class="upi-id-box">
+                            <div class="label">UPI ID</div>
+                            <div class="upi-id" id="upiId">{{ upi_id }}</div>
+                            <button class="copy-btn" onclick="copyUPI()">
+                                <i class="fas fa-copy"></i> Copy UPI ID
+                            </button>
+                        </div>
+
+                        <div class="payment-apps">
+                            <span class="payment-app"><i class="fas fa-mobile-alt"></i> GPay</span>
+                            <span class="payment-app"><i class="fas fa-mobile-alt"></i> PhonePe</span>
+                            <span class="payment-app"><i class="fas fa-mobile-alt"></i> Paytm</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Screenshot -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-upload"></i> Upload Payment Screenshot</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                        <div class="upload-section" id="dropZone">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <h3>Upload Payment Screenshot</h3>
+                            <p>Drag & drop your screenshot here or click to browse</p>
+                            <input type="file" name="screenshot" id="fileInput" class="file-input" accept="image/*" required>
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">
+                                <i class="fas fa-folder-open"></i> Choose File
+                            </button>
+                            
+                            <div class="preview-container" id="previewContainer">
+                                <img id="previewImage" class="preview-image" src="" alt="Preview">
+                                <p style="color: var(--success); margin-top: 0.5rem;">
+                                    <i class="fas fa-check-circle"></i> Screenshot selected
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="warning-box">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Please ensure the screenshot clearly shows the transaction amount (₹{{ cycle.total_amount }}), date, and UPI transaction ID. Incomplete screenshots may be rejected.</p>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-full" style="margin-top: 1.5rem;">
+                            <i class="fas fa-paper-plane"></i> Submit Payment Proof
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help -->
+            <div style="text-align: center; color: var(--gray-500); padding: 1rem;">
+                <p>Having trouble? Contact us at <strong>mahapatravinayak@gmail.com</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Copy UPI ID
+        function copyUPI() {
+            const upiId = document.getElementById('upiId').textContent;
+            navigator.clipboard.writeText(upiId).then(() => {
+                alert('UPI ID copied: ' + upiId);
+            });
+        }
+
+        // File input preview
+        const fileInput = document.getElementById('fileInput');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImage = document.getElementById('previewImage');
+        const dropZone = document.getElementById('dropZone');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewContainer.classList.add('show');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Drag and drop
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                fileInput.files = e.dataTransfer.files;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewContainer.classList.add('show');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Classes - Vaanyan Home Tuition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: var(--gray-50); }
+        .page-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .page-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .back-link {
+            color: var(--white);
+            opacity: 0.9;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .back-link:hover { opacity: 1; }
+        .alert-payment {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid var(--warning);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .alert-payment i {
+            font-size: 3rem;
+            color: var(--warning);
+        }
+        .alert-payment-content h3 {
+            color: #92400e;
+            margin-bottom: 0.5rem;
+        }
+        .alert-payment-content p {
+            color: #78350f;
+            margin: 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 1.25rem;
+        }
+        .stat-info h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.25rem;
+        }
+        .stat-info p {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            margin: 0;
+        }
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        @media (max-width: 968px) {
+            .content-grid { grid-template-columns: 1fr; }
+        }
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+        .card-header {
+            background: var(--gray-50);
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .card-header h2 {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0;
+        }
+        .card-body { padding: 1.5rem; }
+        .cycle-card {
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .cycle-card.pending {
+            border-color: var(--warning);
+            background: rgba(245, 158, 11, 0.05);
+        }
+        .cycle-card.active {
+            border-color: var(--info);
+            background: rgba(59, 130, 246, 0.05);
+        }
+        .cycle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        .teacher-info h3 {
+            font-size: 1.125rem;
+            color: var(--gray-900);
+            margin-bottom: 0.25rem;
+        }
+        .teacher-info p {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            margin: 0;
+        }
+        .cycle-badge {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .cycle-badge.pending {
+            background: var(--warning-light);
+            color: #92400e;
+        }
+        .cycle-badge.active {
+            background: var(--info-light);
+            color: #1e40af;
+        }
+        .cycle-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .cycle-stat {
+            text-align: center;
+            padding: 0.75rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+        }
+        .cycle-stat .value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        .cycle-stat .label {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+        .class-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            margin-bottom: 0.75rem;
+        }
+        .class-info h4 {
+            color: var(--gray-900);
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+        .class-info p {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            margin: 0;
+        }
+        .class-amount {
+            font-weight: 700;
+            color: var(--royal-purple);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray-500);
+        }
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--gray-300);
+        }
+        .progress-bar {
+            background: var(--gray-200);
+            border-radius: var(--radius-full);
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+        .progress-fill {
+            background: var(--gradient-primary);
+            height: 100%;
+            border-radius: var(--radius-full);
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <div class="container">
+            <a href="{{ url_for('student_dashboard') }}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1><i class="fas fa-book-reader"></i> My Classes</h1>
+            <p>Track your learning progress and payments</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Pending Payments Alert -->
+        {% if pending_payments and pending_payments|length > 0 %}
+        {% for payment in pending_payments %}
+        <div class="alert-payment">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div class="alert-payment-content">
+                <h3>Payment Due!</h3>
+                <p>You have a pending payment of <strong>₹{{ payment.total_amount }}</strong> for {{ payment.total_classes }} classes with {{ payment.teacher.first_name }} {{ payment.teacher.last_name }}.</p>
+            </div>
+            <a href="{{ url_for('student_pay', cycle_id=payment.id) }}" class="btn btn-gold">
+                <i class="fas fa-credit-card"></i> Pay Now
+            </a>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-chalkboard"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ sessions|length }}</h3>
+                    <p>Total Classes</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ sessions|sum(attribute='duration_hours')|int if sessions else 0 }}</h3>
+                    <p>Hours Learned</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-rupee-sign"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>₹{{ sessions|sum(attribute='amount') if sessions else 0 }}</h3>
+                    <p>Total Invested</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <!-- Active Cycles -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-sync"></i> Active Learning Cycles</h2>
+                </div>
+                <div class="card-body">
+                    {% if active_cycles and active_cycles|length > 0 %}
+                        {% for cycle in active_cycles %}
+                        <div class="cycle-card active">
+                            <div class="cycle-header">
+                                <div class="teacher-info">
+                                    <h3>{{ cycle.teacher.first_name }} {{ cycle.teacher.last_name }}</h3>
+                                    <p>Started: {{ cycle.start_date.strftime('%b %d, %Y') }}</p>
+                                </div>
+                                <span class="cycle-badge active">
+                                    <i class="fas fa-spinner"></i> In Progress
+                                </span>
+                            </div>
+                            <div class="cycle-stats">
+                                <div class="cycle-stat">
+                                    <div class="value">{{ cycle.total_classes }}</div>
+                                    <div class="label">Classes</div>
+                                </div>
+                                <div class="cycle-stat">
+                                    <div class="value">₹{{ cycle.total_amount }}</div>
+                                    <div class="label">Amount</div>
+                                </div>
+                                <div class="cycle-stat">
+                                    <div class="value">{{ 25 - cycle.total_classes }}</div>
+                                    <div class="label">Remaining</div>
+                                </div>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ (cycle.total_classes / 25 * 100)|int }}%"></div>
+                            </div>
+                            <p class="progress-text">{{ cycle.total_classes }}/25 classes completed</p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-book-open"></i>
+                        <h3>No Active Cycles</h3>
+                        <p>Start learning with a tutor!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recent Classes -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-history"></i> Recent Classes</h2>
+                </div>
+                <div class="card-body">
+                    {% if sessions and sessions|length > 0 %}
+                        {% for session in sessions[:10] %}
+                        <div class="class-item">
+                            <div class="class-info">
+                                <h4>{{ session.teacher.first_name }} {{ session.teacher.last_name }}</h4>
+                                <p>
+                                    <i class="fas fa-calendar"></i> {{ session.date.strftime('%b %d, %Y') }} •
+                                    <i class="fas fa-clock"></i> {{ session.duration_hours }} hr
+                                </p>
+                            </div>
+                            <div class="class-amount">₹{{ session.amount }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <h3>No Classes Yet</h3>
+                        <p>Your class history will appear here</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Payments Section -->
+        {% if pending_payments and pending_payments|length > 0 %}
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-credit-card"></i> Pending Payments</h2>
+            </div>
+            <div class="card-body">
+                {% for payment in pending_payments %}
+                <div class="cycle-card pending">
+                    <div class="cycle-header">
+                        <div class="teacher-info">
+                            <h3>{{ payment.teacher.first_name }} {{ payment.teacher.last_name }}</h3>
+                            <p>{{ payment.start_date.strftime('%b %d') }} - {{ payment.end_date.strftime('%b %d, %Y') if payment.end_date else 'Ongoing' }}</p>
+                        </div>
+                        <span class="cycle-badge pending">
+                            <i class="fas fa-clock"></i> Payment Due
+                        </span>
+                    </div>
+                    <div class="cycle-stats">
+                        <div class="cycle-stat">
+                            <div class="value">{{ payment.total_classes }}</div>
+                            <div class="label">Classes</div>
+                        </div>
+                        <div class="cycle-stat">
+                            <div class="value">₹{{ payment.total_amount }}</div>
+                            <div class="label">Total Due</div>
+                        </div>
+                        <div class="cycle-stat">
+                            <div class="value">₹{{ payment.teacher.teacher_profile.hourly_rate }}</div>
+                            <div class="label">Per Hour</div>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('student_pay', cycle_id=payment.id) }}" class="btn btn-primary btn-full">
+                        <i class="fas fa-credit-card"></i> Pay ₹{{ payment.total_amount }} Now
+                    </a>
+                </div>
+                {% endfor %}
+            </div>s
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
+

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms & Conditions - Vaanyan Home Tuition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: var(--gray-50);
+            min-height: 100vh;
+        }
+        .page-header {
+            background: var(--gradient-hero);
+            color: var(--white);
+            padding: 4rem 0;
+            text-align: center;
+        }
+        .page-header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .page-header p {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            color: var(--gray-200);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .content-wrapper {
+            max-width: 900px;
+            margin: -3rem auto 3rem;
+            padding: 0 1.5rem;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray-600);
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: var(--royal-purple);
+        }
+        .terms-card {
+            background: var(--white);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-xl);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+        }
+        .intro-section {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .intro-section h2 {
+            font-size: 1.75rem;
+            color: var(--gray-900);
+            margin-bottom: 1rem;
+        }
+        .intro-section p {
+            color: var(--gray-600);
+            line-height: 1.8;
+        }
+        .role-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .role-card {
+            background: var(--gray-50);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .role-card:hover {
+            border-color: var(--royal-purple);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-5px);
+        }
+        .role-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: var(--white);
+        }
+        .role-card.teacher .role-icon {
+            background: var(--gradient-secondary);
+        }
+        .role-card h3 {
+            font-size: 1.5rem;
+            color: var(--gray-900);
+            margin-bottom: 0.75rem;
+        }
+        .role-card p {
+            color: var(--gray-600);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+        .common-terms {
+            margin-top: 2rem;
+        }
+        .common-terms h3 {
+            font-size: 1.25rem;
+            color: var(--gray-900);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .term-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+        }
+        .term-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            flex-shrink: 0;
+        }
+        .term-content h4 {
+            color: var(--gray-900);
+            margin-bottom: 0.25rem;
+        }
+        .term-content p {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        .contact-section {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 2rem;
+            border-radius: var(--radius-xl);
+            text-align: center;
+            margin-top: 2rem;
+        }
+        .contact-section h3 {
+            color: var(--white);
+            margin-bottom: 0.5rem;
+        }
+        .contact-section p {
+            color: var(--gray-200);
+            margin-bottom: 1rem;
+        }
+        .contact-info {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+        }
+        .contact-item {
+            background: rgba(255,255,255,0.1);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 2rem;
+            }
+            .role-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="page-header">
+        <div class="container">
+            <h1><i class="fas fa-file-contract"></i> Terms & Conditions</h1>
+            <p>Choose your role to view the specific terms and conditions that apply to you</p>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <a href="{{ url_for('home') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Home
+        </a>
+
+        <div class="terms-card">
+            <!-- Intro -->
+            <div class="intro-section">
+                <h2>Welcome to Vaanyan Home Tuition</h2>
+                <p>Vaanyan Home Tuition is a platform that connects students with qualified home tutors. Please read the terms and conditions carefully before using our services. Select your role below to view the specific terms that apply to you.</p>
+            </div>
+
+            <!-- Role Cards -->
+            <div class="role-cards">
+                <a href="{{ url_for('terms_student') }}" style="text-decoration: none;">
+                    <div class="role-card student">
+                        <div class="role-icon">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <h3>I'm a Student</h3>
+                        <p>View terms for students including payment cycles, class policies, and your responsibilities</p>
+                        <span class="btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> View Student Terms
+                        </span>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('terms_teacher') }}" style="text-decoration: none;">
+                    <div class="role-card teacher">
+                        <div class="role-icon">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                        <h3>I'm a Teacher</h3>
+                        <p>View terms for teachers including commission structure, earnings, and your responsibilities</p>
+                        <span class="btn btn-gold">
+                            <i class="fas fa-arrow-right"></i> View Teacher Terms
+                        </span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Common Terms -->
+            <div class="common-terms">
+                <h3><i class="fas fa-gavel"></i> Common Terms for All Users</h3>
+
+                <div class="term-item">
+                    <div class="term-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="term-content">
+                        <h4>Account Registration</h4>
+                        <p>You must provide accurate information during registration. You are responsible for maintaining the security of your account.</p>
+                    </div>
+                </div>
+
+                <div class="term-item">
+                    <div class="term-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="term-content">
+                        <h4>Privacy & Data Protection</h4>
+                        <p>We collect and use your data only to provide our services. We do not sell your information to third parties.</p>
+                    </div>
+                </div>
+
+                <div class="term-item">
+                    <div class="term-icon">
+                        <i class="fas fa-ban"></i>
+                    </div>
+                    <div class="term-content">
+                        <h4>Code of Conduct</h4>
+                        <p>All users must treat each other with respect. Harassment, fraud, or illegal activities will result in immediate account termination.</p>
+                    </div>
+                </div>
+
+                <div class="term-item">
+                    <div class="term-icon">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div class="term-content">
+                        <h4>Platform Usage</h4>
+                        <p>Do not bypass the platform to avoid fees. All communications and payments should go through Vaanyan Home Tuition.</p>
+                    </div>
+                </div>
+
+                <div class="term-item">
+                    <div class="term-icon">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <div class="term-content">
+                        <h4>Changes to Terms</h4>
+                        <p>We may update these terms from time to time. Continued use of our services means you accept the updated terms.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact -->
+            <div class="contact-section">
+                <h3><i class="fas fa-headset"></i> Need Help?</h3>
+                <p>Contact us for any questions about our terms and conditions</p>
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>mahapatravinayak@gmail.com</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <span>+91 9012977681</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

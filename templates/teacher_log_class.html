@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Class - Vaanyan Home Tuition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: var(--gray-50); }
+        .page-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .page-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .page-header p {
+            opacity: 0.9;
+            color: var(--gray-200);
+        }
+        .back-link {
+            color: var(--white);
+            opacity: 0.9;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            transition: opacity 0.2s;
+        }
+        .back-link:hover { opacity: 1; }
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        @media (max-width: 968px) {
+            .content-grid { grid-template-columns: 1fr; }
+        }
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+        .card-header {
+            background: var(--gray-50);
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .card-header h2 {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .card-body { padding: 1.5rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+        .form-group select,
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        .form-group select:focus,
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--royal-purple);
+        }
+        .rate-display {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .rate-display .rate {
+            font-size: 2.5rem;
+            font-weight: 800;
+        }
+        .rate-display p {
+            opacity: 0.9;
+            color: var(--gray-200);
+        }
+        .calculation-box {
+            background: var(--gray-50);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            margin-bottom: 1.5rem;
+        }
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .calc-row:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--royal-purple);
+        }
+        .recent-classes {
+            margin-top: 2rem;
+        }
+        .class-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            margin-bottom: 0.75rem;
+        }
+        .class-item:hover {
+            background: var(--gray-100);
+        }
+        .class-info h4 {
+            color: var(--gray-900);
+            margin-bottom: 0.25rem;
+        }
+        .class-info p {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            margin: 0;
+        }
+        .class-amount {
+            font-weight: 700;
+            color: var(--success);
+            font-size: 1.125rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray-500);
+        }
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--gray-300);
+        }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <div class="container">
+            <a href="{{ url_for('teacher_dashboard') }}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1><i class="fas fa-clipboard-check"></i> Log Completed Class</h1>
+            <p>Record a class session with your student</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem;">
+                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="content-grid">
+            <!-- Log Class Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-plus-circle"></i> New Class Entry</h2>
+                </div>
+                <div class="card-body">
+                    <div class="rate-display">
+                        <p>Your Hourly Rate</p>
+                        <div class="rate">₹{{ current_user.teacher_profile.hourly_rate }}/hr</div>
+                    </div>
+
+                    {% if accepted_requests and accepted_requests|length > 0 %}
+                    <form method="POST">
+                        <div class="form-group">
+                            <label><i class="fas fa-user-graduate"></i> Select Student</label>
+                            <select name="student_id" id="student_select" required>
+                                <option value="">-- Choose Student --</option>
+                                {% for req in accepted_requests %}
+                                <option value="{{ req.student.id }}" data-request="{{ req.id }}">
+                                    {{ req.student.first_name }} {{ req.student.last_name }} ({{ req.subject|title }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <input type="hidden" name="request_id" id="request_id">
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar"></i> Class Date</label>
+                            <input type="date" name="class_date" value="{{ today }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-clock"></i> Duration (Hours)</label>
+                            <select name="duration" id="duration_select" required>
+                                <option value="0.5">30 Minutes (0.5 hr)</option>
+                                <option value="1" selected>1 Hour</option>
+                                <option value="1.5">1.5 Hours</option>
+                                <option value="2">2 Hours</option>
+                                <option value="2.5">2.5 Hours</option>
+                                <option value="3">3 Hours</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-sticky-note"></i> Notes (Optional)</label>
+                            <textarea name="notes" rows="3" placeholder="Topics covered, homework given, etc."></textarea>
+                        </div>
+
+                        <div class="calculation-box">
+                            <h4 style="margin-bottom: 1rem; color: var(--gray-700);">
+                                <i class="fas fa-calculator"></i> Billing Calculation
+                            </h4>
+                            <div class="calc-row">
+                                <span>Hourly Rate</span>
+                                <span>₹{{ current_user.teacher_profile.hourly_rate }}</span>
+                            </div>
+                            <div class="calc-row">
+                                <span>Duration</span>
+                                <span id="display_duration">1 Hour</span>
+                            </div>
+                            <div class="calc-row">
+                                <span>Total Amount</span>
+                                <span id="display_amount">₹{{ current_user.teacher_profile.hourly_rate }}</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-full">
+                            <i class="fas fa-check"></i> Log This Class
+                        </button>
+                    </form>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-user-slash"></i>
+                        <h3>No Active Students</h3>
+                        <p>You need to accept student requests first before logging classes.</p>
+                        <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-primary" style="margin-top: 1rem;">
+                            Go to Dashboard
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recent Classes -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-history"></i> Recent Classes</h2>
+                </div>
+                <div class="card-body">
+                    {% if current_user.teacher_sessions and current_user.teacher_sessions|length > 0 %}
+                        {% for session in current_user.teacher_sessions[-10:]|reverse %}
+                        <div class="class-item">
+                            <div class="class-info">
+                                <h4>{{ session.student.first_name }} {{ session.student.last_name }}</h4>
+                                <p>
+                                    <i class="fas fa-calendar"></i> {{ session.date.strftime('%b %d, %Y') }} •
+                                    <i class="fas fa-clock"></i> {{ session.duration_hours }} hr
+                                </p>
+                            </div>
+                            <div class="class-amount">+₹{{ session.amount }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-chalkboard"></i>
+                        <h3>No Classes Yet</h3>
+                        <p>Your logged classes will appear here</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-body">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; text-align: center;">
+                    <div>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--royal-purple);">
+                            {{ current_user.teacher_sessions|length if current_user.teacher_sessions else 0 }}
+                        </div>
+                        <div style="color: var(--gray-600);">Total Classes</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--success);">
+                            ₹{{ current_user.teacher_sessions|sum(attribute='amount') if current_user.teacher_sessions else 0 }}
+                        </div>
+                        <div style="color: var(--gray-600);">Total Billed</div>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('teacher_earnings') }}" class="btn btn-gold">
+                            <i class="fas fa-wallet"></i> View Earnings
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Update request_id when student changes
+        document.getElementById('student_select').addEventListener('change', function() {
+            var selected = this.options[this.selectedIndex];
+            document.getElementById('request_id').value = selected.dataset.request || '';
+        });
+
+        // Update calculation when duration changes
+        document.getElementById('duration_select').addEventListener('change', function() {
+            var duration = parseFloat(this.value);
+            var rate = {{ current_user.teacher_profile.hourly_rate }};
+            var amount = duration * rate;
+            
+            document.getElementById('display_duration').textContent = duration + ' Hour' + (duration > 1 ? 's' : '');
+            document.getElementById('display_amount').textContent = '₹' + amount;
+        });
+    </script>
+</body>
+</html>

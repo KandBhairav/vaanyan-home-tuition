@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Terms & Conditions - Vaanyan Home Tuition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: var(--gray-50);
+        }
+        .page-header {
+            background: var(--gradient-hero);
+            color: var(--white);
+            padding: 4rem 0;
+            text-align: center;
+        }
+        .page-header .icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.5rem;
+        }
+        .page-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .page-header p {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            color: var(--gray-200);
+        }
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+        .content-wrapper {
+            max-width: 900px;
+            margin: -3rem auto 3rem;
+            padding: 0 1.5rem;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray-600);
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+        .back-link:hover {
+            color: var(--royal-purple);
+        }
+        .terms-card {
+            background: var(--white);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+        }
+        .terms-nav {
+            background: var(--gray-50);
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .terms-nav a {
+            padding: 0.5rem 1rem;
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            transition: all 0.2s;
+        }
+        .terms-nav a:hover {
+            background: var(--gradient-secondary);
+            color: var(--white);
+            border-color: transparent;
+        }
+        .terms-content {
+            padding: 2.5rem;
+        }
+        .section {
+            margin-bottom: 2.5rem;
+            padding-bottom: 2.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            color: var(--gray-900);
+            margin-bottom: 1.5rem;
+        }
+        .section-title i {
+            width: 45px;
+            height: 45px;
+            background: var(--gradient-secondary);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 1.1rem;
+        }
+        .section p {
+            color: var(--gray-600);
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+        .section ul {
+            margin: 1rem 0;
+            padding-left: 0;
+        }
+        .section li {
+            color: var(--gray-600);
+            line-height: 1.8;
+            margin-bottom: 0.75rem;
+            padding-left: 2rem;
+            position: relative;
+            list-style: none;
+        }
+        .section li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--royal-gold);
+            font-weight: 700;
+            width: 24px;
+            height: 24px;
+            background: rgba(245, 158, 11, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%);
+            border-left: 4px solid var(--royal-gold);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .highlight-box h4 {
+            color: var(--royal-gold-dark);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .highlight-box p {
+            margin-bottom: 0;
+            color: var(--gray-700);
+        }
+        .warning-box {
+            background: var(--error-light);
+            border-left: 4px solid var(--error);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .warning-box h4 {
+            color: #991b1b;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .warning-box p, .warning-box li {
+            color: #7f1d1d;
+        }
+        .success-box {
+            background: var(--success-light);
+            border-left: 4px solid var(--success);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .success-box h4 {
+            color: #065f46;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .success-box p {
+            color: #064e3b;
+            margin-bottom: 0;
+        }
+        .info-box {
+            background: var(--info-light);
+            border-left: 4px solid var(--info);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .info-box h4 {
+            color: #1e40af;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .info-box p {
+            color: #1e3a8a;
+            margin-bottom: 0;
+        }
+        .commission-card {
+            background: var(--gradient-secondary);
+            color: var(--white);
+            padding: 2rem;
+            border-radius: var(--radius-xl);
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+        .commission-card h3 {
+            color: var(--white);
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+        .commission-split {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 1rem;
+            align-items: center;
+            margin: 1.5rem 0;
+        }
+        .commission-item {
+            background: rgba(255,255,255,0.15);
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+        }
+        .commission-item .percent {
+            font-size: 3rem;
+            font-weight: 800;
+        }
+        .commission-item .label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .commission-arrow {
+            font-size: 2rem;
+            opacity: 0.5;
+        }
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+        .payment-table th,
+        .payment-table td {
+            padding: 1rem 1.25rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .payment-table th {
+            background: var(--gradient-secondary);
+            color: var(--white);
+            font-weight: 600;
+        }
+        .payment-table tr:nth-child(even) {
+            background: var(--gray-50);
+        }
+        .payment-table tr:last-child td {
+            border-bottom: none;
+        }
+        .example-calc {
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .example-calc h4 {
+            color: var(--gray-900);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px dashed var(--gray-300);
+        }
+        .calc-row:last-child {
+            border-bottom: none;
+            padding-top: 1rem;
+            margin-top: 0.5rem;
+            border-top: 2px solid var(--gray-300);
+        }
+        .calc-row.total {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--success);
+        }
+        .cta-section {
+            background: var(--gradient-secondary);
+            color: var(--white);
+            padding: 2rem;
+            border-radius: var(--radius-xl);
+            text-align: center;
+            margin-top: 2rem;
+        }
+        .cta-section h3 {
+            color: var(--white);
+            margin-bottom: 0.5rem;
+        }
+        .cta-section p {
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 1.5rem;
+        }
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 2rem;
+            }
+            .terms-content {
+                padding: 1.5rem;
+            }
+            .section-title {
+                font-size: 1.25rem;
+            }
+            .commission-split {
+                grid-template-columns: 1fr;
+            }
+            .commission-arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="page-header">
+        <div class="container">
+            <div class="icon">
+                <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+            <h1>Teacher Terms & Conditions</h1>
+            <p>Terms and conditions for teachers on Vaanyan Home Tuition</p>
+            <span class="badge"><i class="fas fa-calendar-alt"></i> Last Updated: January 2026</span>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <a href="{{ url_for('terms_and_conditions') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Terms Overview
+        </a>
+
+        <div class="terms-card">
+            <!-- Navigation -->
+            <nav class="terms-nav">
+                <a href="#overview">Overview</a>
+                <a href="#registration">Registration</a>
+                <a href="#earnings">Earnings</a>
+                <a href="#commission">Commission</a>
+                <a href="#payment">Payment Process</a>
+                <a href="#responsibilities">Responsibilities</a>
+                <a href="#demo">Demo Classes</a>
+                <a href="#termination">Termination</a>
+            </nav>
+
+            <!-- Content -->
+            <div class="terms-content">
+                <!-- Overview -->
+                <section class="section" id="overview">
+                    <h2 class="section-title">
+                        <i class="fas fa-book-open"></i>
+                        1. Overview
+                    </h2>
+                    <p>Welcome to Vaanyan Home Tuition! As a teacher, you can connect with students in your area and earn by teaching what you love. These terms explain how our platform works for teachers.</p>
+                    
+                    <div class="highlight-box">
+                        <h4><i class="fas fa-star"></i> Why Join Vaanyan?</h4>
+                        <p>Set your own hourly rate, flexible schedule, steady stream of students, secure payments, and focus on teaching while we handle the rest.</p>
+                    </div>
+                </section>
+
+                <!-- Registration -->
+                <section class="section" id="registration">
+                    <h2 class="section-title">
+                        <i class="fas fa-user-plus"></i>
+                        2. Registration & Profile
+                    </h2>
+                    <p>To register as a teacher:</p>
+                    <ul>
+                        <li>Provide your real name, email, phone number, and address</li>
+                        <li>Enter your educational qualifications accurately</li>
+                        <li>Specify your teaching experience</li>
+                        <li>List subjects you can teach</li>
+                        <li>Set your hourly rate (you decide your own rate!)</li>
+                        <li>Choose teaching modes (Home Tuition, Online, Group)</li>
+                        <li>Write a compelling bio to attract students</li>
+                    </ul>
+
+                    <div class="info-box">
+                        <h4><i class="fas fa-lightbulb"></i> Pro Tip</h4>
+                        <p>A complete and detailed profile attracts more students. Include your teaching philosophy, achievements, and what makes you unique!</p>
+                    </div>
+                </section>
+
+                <!-- Earnings -->
+                <section class="section" id="earnings">
+                    <h2 class="section-title">
+                        <i class="fas fa-rupee-sign"></i>
+                        3. Your Earnings
+                    </h2>
+                    <p>You have full control over your earnings:</p>
+                    <ul>
+                        <li><strong>Set Your Rate:</strong> You decide your hourly rate (₹200, ₹500, ₹1000 - whatever you want)</li>
+                        <li><strong>Flexible Hours:</strong> Teach as much or as little as you want</li>
+                        <li><strong>Multiple Students:</strong> Take on as many students as you can handle</li>
+                        <li><strong>Rate Changes:</strong> Update your rate anytime from your profile</li>
+                    </ul>
+
+                    <div class="success-box">
+                        <h4><i class="fas fa-chart-line"></i> Earning Potential</h4>
+                        <p>If you teach 4 hours/day at ₹500/hr, you can earn up to <strong>₹60,000/month</strong> (after commission). Your earnings grow as you build your reputation!</p>
+                    </div>
+                </section>
+
+                <!-- Commission -->
+                <section class="section" id="commission">
+                    <h2 class="section-title">
+                        <i class="fas fa-percentage"></i>
+                        4. Commission Structure
+                    </h2>
+                    <p>Vaanyan charges a simple and fair commission:</p>
+
+                    <div class="commission-card">
+                        <h3>Commission Split</h3>
+                        <div class="commission-split">
+                            <div class="commission-item">
+                                <div class="percent">90%</div>
+                                <div class="label">You Keep</div>
+                            </div>
+                            <div class="commission-arrow">→</div>
+                            <div class="commission-item">
+                                <div class="percent">10%</div>
+                                <div class="label">Platform Fee</div>
+                            </div>
+                        </div>
+                        <p style="opacity: 0.9; margin: 0;">Simple, transparent, no hidden charges</p>
+                    </div>
+
+                    <div class="example-calc">
+                        <h4><i class="fas fa-calculator"></i> Example Calculation</h4>
+                        <p style="color: var(--gray-600); margin-bottom: 1rem;">If your rate is ₹500/hr and a student takes 10 classes:</p>
+                        <div class="calc-row">
+                            <span>Hourly Rate</span>
+                            <span>₹500</span>
+                        </div>
+                        <div class="calc-row">
+                            <span>Classes Taken</span>
+                            <span>10</span>
+                        </div>
+                        <div class="calc-row">
+                            <span>Total Billing</span>
+                            <span>₹5,000</span>
+                        </div>
+                        <div class="calc-row">
+                            <span>Platform Commission (10%)</span>
+                            <span>- ₹500</span>
+                        </div>
+                        <div class="calc-row total">
+                            <span>You Receive</span>
+                            <span>₹4,500</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Payment Process -->
+                <section class="section" id="payment">
+                    <h2 class="section-title">
+                        <i class="fas fa-wallet"></i>
+                        5. Payment Process
+                    </h2>
+                    <p>Here's how you get paid:</p>
+
+                    <table class="payment-table">
+                        <tr>
+                            <th>Step</th>
+                            <th>Details</th>
+                        </tr>
+                        <tr>
+                            <td>1. Log Classes</td>
+                            <td>After each class, log it on the platform with date and duration</td>
+                        </tr>
+                        <tr>
+                            <td>2. Cycle Completion</td>
+                            <td>After 25 classes or 1 month, payment cycle completes</td>
+                        </tr>
+                        <tr>
+                            <td>3. Student Pays</td>
+                            <td>Student pays the total amount to Vaanyan</td>
+                        </tr>
+                        <tr>
+                            <td>4. Verification</td>
+                            <td>We verify the payment</td>
+                        </tr>
+                        <tr>
+                            <td>5. You Get Paid</td>
+                            <td>Your 90% share is transferred to you</td>
+                        </tr>
+                    </table>
+
+                    <div class="info-box">
+                        <h4><i class="fas fa-clock"></i> Payment Timeline</h4>
+                        <p>Once student payment is verified, your earnings are processed within <strong>2-3 business days</strong>.</p>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h4><i class="fas fa-clipboard-check"></i> Important: Log Every Class!</h4>
+                        <p>Always log your classes accurately. Unlogged classes cannot be billed, and you won't receive payment for them.</p>
+                    </div>
+                </section>
+
+                <!-- Responsibilities -->
+                <section class="section" id="responsibilities">
+                    <h2 class="section-title">
+                        <i class="fas fa-tasks"></i>
+                        6. Your Responsibilities
+                    </h2>
+                    <p>As a teacher on Vaanyan, you agree to:</p>
+                    <ul>
+                        <li>Provide accurate information about your qualifications</li>
+                        <li>Maintain professional conduct with all students</li>
+                        <li>Be punctual for scheduled classes</li>
+                        <li>Deliver quality education as promised</li>
+                        <li>Log all completed classes accurately on the platform</li>
+                        <li>Communicate schedule changes in advance</li>
+                        <li>Respond to student messages within 24 hours</li>
+                        <li>Maintain confidentiality of student information</li>
+                        <li>Not share inappropriate content with students</li>
+                        <li>Follow all local laws and regulations</li>
+                    </ul>
+
+                    <div class="warning-box">
+                        <h4><i class="fas fa-ban"></i> Strictly Prohibited</h4>
+                        <p>Contacting students outside Vaanyan to bypass platform fees is strictly prohibited. This will result in immediate account termination and forfeiture of pending earnings.</p>
+                    </div>
+                </section>
+
+                <!-- Demo Classes -->
+                <section class="section" id="demo">
+                    <h2 class="section-title">
+                        <i class="fas fa-gift"></i>
+                        7. Demo Classes
+                    </h2>
+                    <p>About demo classes:</p>
+                    <ul>
+                        <li>Students are entitled to 2 free demo classes</li>
+                        <li>Demo classes are your opportunity to showcase your teaching</li>
+                        <li>Give your best during demos to convert students</li>
+                        <li>Demo classes are not paid, but lead to paid students</li>
+                        <li>Demo classes only apply for monthly arrangements</li>
+                    </ul>
+
+                    <div class="success-box">
+                        <h4><i class="fas fa-handshake"></i> Convert Demos to Students</h4>
+                        <p>A great demo class often leads to months of paid tuition. Put your best foot forward!</p>
+                    </div>
+                </section>
+
+                <!-- Termination -->
+                <section class="section" id="termination">
+                    <h2 class="section-title">
+                        <i class="fas fa-door-open"></i>
+                        8. Account Termination
+                    </h2>
+                    <p>Regarding account termination:</p>
+                    <ul>
+                        <li><strong>By You:</strong> You can leave anytime after completing ongoing commitments</li>
+                        <li><strong>By Us:</strong> We may terminate accounts that violate our terms</li>
+                        <li><strong>Pending Earnings:</strong> All verified earnings will be paid even after termination</li>
+                        <li><strong>Student Transition:</strong> Inform your students about the change</li>
+                    </ul>
+
+                    <div class="warning-box">
+                        <h4><i class="fas fa-exclamation-triangle"></i> Grounds for Termination</h4>
+                        <ul style="margin: 0.5rem 0 0 0; padding-left: 1.25rem;">
+                            <li style="padding-left: 0;">Fake qualifications or information</li>
+                            <li style="padding-left: 0;">Bypassing platform to avoid fees</li>
+                            <li style="padding-left: 0;">Inappropriate behavior with students</li>
+                            <li style="padding-left: 0;">Consistent poor quality or complaints</li>
+                            <li style="padding-left: 0;">Not logging classes accurately</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- CTA -->
+                <div class="cta-section">
+                    <h3><i class="fas fa-rocket"></i> Ready to Start Teaching?</h3>
+                    <p>Join Vaanyan and start earning by doing what you love</p>
+                    <a href="{{ url_for('teacher_registration') }}" class="btn btn-secondary">
+                        <i class="fas fa-user-plus"></i> Register as Teacher
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

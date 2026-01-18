@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Earnings - Vaanyan Home Tuition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: var(--gray-50); }
+        .page-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .page-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .back-link {
+            color: var(--white);
+            opacity: 0.9;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .back-link:hover { opacity: 1; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+        .stat-card.highlight {
+            background: var(--gradient-primary);
+            color: var(--white);
+        }
+        .stat-card.highlight .stat-label {
+            color: var(--gray-200);
+        }
+        .stat-card.gold {
+            background: var(--gradient-secondary);
+            color: var(--white);
+        }
+        .stat-card.gold .stat-label {
+            color: rgba(255,255,255,0.9);
+        }
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+        }
+        .stat-card:not(.highlight):not(.gold) .stat-icon {
+            background: var(--gradient-primary);
+            color: var(--white);
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .stat-label {
+            color: var(--gray-600);
+            font-size: 0.95rem;
+        }
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        .card-header {
+            background: var(--gray-50);
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-header h2 {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0;
+        }
+        .card-body { padding: 1.5rem; }
+        .cycle-item {
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+        .cycle-item:hover {
+            border-color: var(--royal-purple);
+            box-shadow: var(--shadow-md);
+        }
+        .cycle-item.paid {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+        .cycle-item.pending {
+            border-color: var(--warning);
+            background: rgba(245, 158, 11, 0.05);
+        }
+        .cycle-item.active {
+            border-color: var(--info);
+            background: rgba(59, 130, 246, 0.05);
+        }
+        .cycle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        .cycle-student h3 {
+            font-size: 1.125rem;
+            color: var(--gray-900);
+            margin-bottom: 0.25rem;
+        }
+        .cycle-student p {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            margin: 0;
+        }
+        .cycle-status {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .cycle-status.paid {
+            background: var(--success-light);
+            color: #065f46;
+        }
+        .cycle-status.pending {
+            background: var(--warning-light);
+            color: #92400e;
+        }
+        .cycle-status.active {
+            background: var(--info-light);
+            color: #1e40af;
+        }
+        .cycle-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        .detail-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+        }
+        .detail-item .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        .detail-item .label {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+        }
+        .detail-item.earning .value {
+            color: var(--success);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray-500);
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: var(--gray-300);
+        }
+        .info-box {
+            background: var(--info-light);
+            border: 1px solid var(--info);
+            border-radius: var(--radius-lg);
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .info-box i {
+            font-size: 1.5rem;
+            color: var(--info);
+        }
+        .info-box p {
+            margin: 0;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <div class="container">
+            <a href="{{ url_for('teacher_dashboard') }}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <h1><i class="fas fa-wallet"></i> My Earnings</h1>
+            <p>Track your income and payment history</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card highlight">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-value">₹{{ total_earned }}</div>
+                <div class="stat-label">Total Earned (Paid)</div>
+            </div>
+            <div class="stat-card gold">
+                <div class="stat-icon">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <div class="stat-value">₹{{ pending_amount }}</div>
+                <div class="stat-label">Pending Payment</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="stat-value">90%</div>
+                <div class="stat-label">Your Share</div>
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+            <i class="fas fa-info-circle"></i>
+            <p><strong>How it works:</strong> You receive 90% of the total billing. Vaanyan keeps 10% as platform commission. Payments are processed after student completes payment.</p>
+        </div>
+
+        <!-- Payment Cycles -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-history"></i> Payment Cycles</h2>
+                <a href="{{ url_for('teacher_log_class') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Log Class
+                </a>
+            </div>
+            <div class="card-body">
+                {% if cycles and cycles|length > 0 %}
+                    {% for cycle in cycles %}
+                    <div class="cycle-item {{ cycle.status }}">
+                        <div class="cycle-header">
+                            <div class="cycle-student">
+                                <h3>{{ cycle.student.first_name }} {{ cycle.student.last_name }}</h3>
+                                <p>
+                                    <i class="fas fa-calendar"></i> Started: {{ cycle.start_date.strftime('%b %d, %Y') }}
+                                    {% if cycle.end_date %}
+                                    • Ended: {{ cycle.end_date.strftime('%b %d, %Y') }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <span class="cycle-status {{ cycle.status }}">
+                                {% if cycle.status == 'paid' %}
+                                    <i class="fas fa-check"></i> Paid
+                                {% elif cycle.status == 'pending_payment' or cycle.status == 'pending_verification' %}
+                                    <i class="fas fa-clock"></i> Pending
+                                {% else %}
+                                    <i class="fas fa-spinner"></i> Active
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="cycle-details">
+                            <div class="detail-item">
+                                <div class="value">{{ cycle.total_classes }}</div>
+                                <div class="label">Classes</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="value">₹{{ cycle.total_amount }}</div>
+                                <div class="label">Total Billed</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="value">₹{{ cycle.commission }}</div>
+                                <div class="label">Commission (10%)</div>
+                            </div>
+                            <div class="detail-item earning">
+                                <div class="value">₹{{ cycle.teacher_earning }}</div>
+                                <div class="label">Your Earning</div>
+                            </div>
+                        </div>
+                        {% if cycle.status == 'paid' and cycle.payment_verified_at %}
+                        <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--success);">
+                            <i class="fas fa-check-circle"></i> Payment verified on {{ cycle.payment_verified_at.strftime('%b %d, %Y') }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-wallet"></i>
+                    <h3>No Payment Cycles Yet</h3>
+                    <p>Start logging classes to create payment cycles</p>
+                    <a href="{{ url_for('teacher_log_class') }}" class="btn btn-primary" style="margin-top: 1rem;">
+                        <i class="fas fa-plus"></i> Log Your First Class
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - Vaanyan Home Tuition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: var(--gray-50); }
+        .edit-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .edit-card {
+            background: var(--white);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+        }
+        .edit-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 2rem;
+            text-align: center;
+        }
+        .edit-header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .edit-form { padding: 2rem; }
+        .form-section {
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .form-section:last-child { border-bottom: none; margin-bottom: 0; }
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--royal-purple);
+        }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.75rem;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .checkbox-item:hover { background: var(--gray-100); }
+        .checkbox-item input { width: auto; }
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="edit-container">
+        <div class="edit-card">
+            <div class="edit-header">
+                <h1><i class="fas fa-user-edit"></i> Edit Your Profile</h1>
+                <p>Update your teaching profile below</p>
+            </div>
+            
+            <form method="POST" class="edit-form">
+                <!-- Personal Info Section -->
+                <div class="form-section">
+                    <h2 class="section-title"><i class="fas fa-user"></i> Personal Information</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>First Name</label>
+                            <input type="text" name="first_name" value="{{ current_user.first_name }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input type="text" name="last_name" value="{{ current_user.last_name }}" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Email (Cannot be changed)</label>
+                            <input type="email" value="{{ current_user.email }}" disabled style="background: var(--gray-100);">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" name="phone" value="{{ current_user.phone }}" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional Info Section -->
+                <div class="form-section">
+                    <h2 class="section-title"><i class="fas fa-briefcase"></i> Professional Information</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Qualification</label>
+                            <select name="qualification" required>
+                                <option value="Graduate" {% if current_user.teacher_profile and current_user.teacher_profile.qualification == 'Graduate' %}selected{% endif %}>Graduate</option>
+                                <option value="Post Graduate" {% if current_user.teacher_profile and current_user.teacher_profile.qualification == 'Post Graduate' %}selected{% endif %}>Post Graduate</option>
+                                <option value="Masters" {% if current_user.teacher_profile and current_user.teacher_profile.qualification == 'Masters' %}selected{% endif %}>Masters</option>
+                                <option value="PhD" {% if current_user.teacher_profile and current_user.teacher_profile.qualification == 'PhD' %}selected{% endif %}>PhD</option>
+                                <option value="B.Ed" {% if current_user.teacher_profile and current_user.teacher_profile.qualification == 'B.Ed' %}selected{% endif %}>B.Ed</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Experience</label>
+                            <select name="experience" required>
+                                <option value="0-1" {% if current_user.teacher_profile and current_user.teacher_profile.experience == '0-1' %}selected{% endif %}>0-1 years</option>
+                                <option value="1-3" {% if current_user.teacher_profile and current_user.teacher_profile.experience == '1-3' %}selected{% endif %}>1-3 years</option>
+                                <option value="3-5" {% if current_user.teacher_profile and current_user.teacher_profile.experience == '3-5' %}selected{% endif %}>3-5 years</option>
+                                <option value="5-10" {% if current_user.teacher_profile and current_user.teacher_profile.experience == '5-10' %}selected{% endif %}>5-10 years</option>
+                                <option value="10+" {% if current_user.teacher_profile and current_user.teacher_profile.experience == '10+' %}selected{% endif %}>10+ years</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Hourly Rate (₹)</label>
+                            <input type="number" name="hourly_rate" value="{{ current_user.teacher_profile.hourly_rate if current_user.teacher_profile else '' }}" min="100" max="5000" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Bio / About Yourself</label>
+                        <textarea name="bio" rows="4" placeholder="Tell students about your teaching style, experience, achievements...">{{ current_user.teacher_profile.bio if current_user.teacher_profile else '' }}</textarea>
+                    </div>
+                </div>
+
+                <!-- Subjects Section -->
+                <div class="form-section">
+                    <h2 class="section-title"><i class="fas fa-book"></i> Subjects You Teach</h2>
+                    <div class="checkbox-group">
+                        {% set teacher_subjects = current_user.teacher_profile.subjects.split(',') if current_user.teacher_profile else [] %}
+                        {% for subject in ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Hindi', 'History', 'Geography', 'Economics', 'Computer Science'] %}
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="subjects" value="{{ subject|lower }}" {% if subject|lower in teacher_subjects %}checked{% endif %}>
+                            {{ subject }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Teaching Mode Section -->
+                <div class="form-section">
+                    <h2 class="section-title"><i class="fas fa-laptop"></i> Teaching Mode</h2>
+                    <div class="checkbox-group">
+                        {% set teaching_modes = current_user.teacher_profile.teaching_mode.split(',') if current_user.teacher_profile else [] %}
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="teaching_mode" value="home_tuition" {% if 'home_tuition' in teaching_modes %}checked{% endif %}>
+                            <i class="fas fa-home"></i> Home Tuition
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="teaching_mode" value="online" {% if 'online' in teaching_modes %}checked{% endif %}>
+                            <i class="fas fa-video"></i> Online Classes
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="teaching_mode" value="group" {% if 'group' in teaching_modes %}checked{% endif %}>
+                            <i class="fas fa-users"></i> Group Classes
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Location Section -->
+                <div class="form-section">
+                    <h2 class="section-title"><i class="fas fa-map-marker-alt"></i> Location</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" name="city" value="{{ current_user.teacher_profile.city if current_user.teacher_profile else '' }}" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Full Address</label>
+                        <textarea name="address" rows="3" required>{{ current_user.teacher_profile.address if current_user.teacher_profile else '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -395,11 +395,21 @@ def student_dashboard():
         is_read=False
     ).count()
     
+    # ADMIN MESSAGES - NEW CODE
+    admin_users = User.query.filter_by(role='admin').all()
+    admin_ids = [admin.id for admin in admin_users]
+    
+    admin_messages = Message.query.filter(
+        Message.recipient_id == user.id,
+        Message.sender_id.in_(admin_ids)
+    ).order_by(Message.created_at.desc()).limit(10).all()
+    
     return render_template('student_dashboard.html', 
                          current_user=user,
                          tutors=tutors,
                          classes=classes,
-                         messages=range(unread_messages))
+                         messages=range(unread_messages),
+                         admin_messages=admin_messages)
 
 @app.route('/teacher/dashboard')
 @login_required
@@ -435,13 +445,23 @@ def teacher_dashboard():
         is_read=False
     ).count()
     
+    # ADMIN MESSAGES - NEW CODE
+    admin_users = User.query.filter_by(role='admin').all()
+    admin_ids = [admin.id for admin in admin_users]
+    
+    admin_messages = Message.query.filter(
+        Message.recipient_id == user.id,
+        Message.sender_id.in_(admin_ids)
+    ).order_by(Message.created_at.desc()).limit(10).all()
+    
     return render_template('teacher_dashboard.html',
                          current_user=user,
                          pending_requests=pending_requests,
                          students=students,
                          classes=classes,
                          monthly_earnings=monthly_earnings,
-                         messages=range(unread_messages))
+                         messages=range(unread_messages),
+                         admin_messages=admin_messages)
 
 @app.route('/find-tutors')
 @login_required
@@ -479,6 +499,67 @@ def request_tutor_page(teacher_id):
         return redirect(url_for('find_tutors'))
     
     return render_template('request_tutor.html', teacher=teacher, current_user=get_current_user())
+@app.route('/student/edit-profile', methods=['GET', 'POST'])
+@login_required
+def student_edit_profile():
+    user = get_current_user()
+    
+    if user.role != 'student':
+        flash('Access denied', 'error')
+        return redirect(url_for('home'))
+    
+    if request.method == 'POST':
+        # Update User info
+        user.first_name = request.form.get('first_name')
+        user.last_name = request.form.get('last_name')
+        user.phone = request.form.get('phone')
+        
+        # Update Student Profile
+        if user.student_profile:
+            user.student_profile.grade = request.form.get('grade')
+            user.student_profile.board = request.form.get('board')
+            user.student_profile.subjects = ','.join(request.form.getlist('subjects'))
+            user.student_profile.city = request.form.get('city')
+            user.student_profile.address = request.form.get('address')
+        
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('student_dashboard'))
+    
+    return render_template('student_edit_profile.html', current_user=user)
+
+
+@app.route('/teacher/edit-profile', methods=['GET', 'POST'])
+@login_required
+def teacher_edit_profile():
+    user = get_current_user()
+    
+    if user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('home'))
+    
+    if request.method == 'POST':
+        # Update User info
+        user.first_name = request.form.get('first_name')
+        user.last_name = request.form.get('last_name')
+        user.phone = request.form.get('phone')
+        
+        # Update Teacher Profile
+        if user.teacher_profile:
+            user.teacher_profile.qualification = request.form.get('qualification')
+            user.teacher_profile.experience = request.form.get('experience')
+            user.teacher_profile.subjects = ','.join(request.form.getlist('subjects'))
+            user.teacher_profile.teaching_mode = ','.join(request.form.getlist('teaching_mode'))
+            user.teacher_profile.hourly_rate = int(request.form.get('hourly_rate'))
+            user.teacher_profile.bio = request.form.get('bio')
+            user.teacher_profile.city = request.form.get('city')
+            user.teacher_profile.address = request.form.get('address')
+        
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('teacher_dashboard'))
+    
+    return render_template('teacher_edit_profile.html', current_user=user)
 
 @app.route('/send-tutor-request', methods=['POST'])
 @login_required
@@ -824,6 +905,228 @@ def admin_send_message(user_id):
 @app.context_processor
 def inject_user():
     return dict(current_user=get_current_user())
+@app.route('/admin/payments')
+@login_required
+def admin_payments():
+    user = get_current_user()
+    
+    if user.role != 'admin':
+        flash('Access denied', 'error')
+        return redirect(url_for('home'))
+    
+    pending = PaymentCycle.query.filter_by(status='pending_verification').all()
+    completed = PaymentCycle.query.filter_by(status='paid').order_by(PaymentCycle.payment_verified_at.desc()).limit(20).all()
+    
+    # Calculate total commission earned
+    total_commission = sum(c.commission for c in PaymentCycle.query.filter_by(status='paid').all())
+    
+    return render_template('admin_payments.html',
+                         current_user=user,
+                         pending=pending,
+                         completed=completed,
+                         total_commission=total_commission)
+
+
+@app.route('/admin/verify-payment/<int:cycle_id>', methods=['POST'])
+@login_required
+def admin_verify_payment(cycle_id):
+    user = get_current_user()
+    
+    if user.role != 'admin':
+        flash('Access denied', 'error')
+        return redirect(url_for('home'))
+    
+    cycle = PaymentCycle.query.get_or_404(cycle_id)
+    action = request.form.get('action')
+    
+    if action == 'approve':
+        cycle.status = 'paid'
+        cycle.payment_verified_at = datetime.utcnow()
+        
+        # Update teacher's total earnings
+        cycle.teacher.teacher_profile.total_earnings += cycle.teacher_earning
+        
+        flash(f'Payment verified! Teacher will receive ₹{cycle.teacher_earning}', 'success')
+    elif action == 'reject':
+        cycle.status = 'pending_payment'
+        cycle.payment_screenshot = None
+        flash('Payment rejected. Student will be notified.', 'error')
+    
+    db.session.commit()
+    return redirect(url_for('admin_payments'))
+
+@app.route('/student/my-classes')
+@login_required
+def student_classes():
+    user = get_current_user()
+    
+    if user.role != 'student':
+        flash('Access denied', 'error')
+        return redirect(url_for('home'))
+    
+    # Get all class sessions
+    sessions = ClassSession.query.filter_by(student_id=user.id).order_by(ClassSession.date.desc()).all()
+    
+    # Get active payment cycles
+    active_cycles = PaymentCycle.query.filter_by(
+        student_id=user.id,
+        status='active'
+    ).all()
+    
+    pending_payments = PaymentCycle.query.filter_by(
+        student_id=user.id,
+        status='pending_payment'
+    ).all()
+    
+    return render_template('student_classes.html',
+                         current_user=user,
+                         sessions=sessions,
+                         active_cycles=active_cycles,
+                         pending_payments=pending_payments)
+
+
+@app.route('/student/pay/<int:cycle_id>', methods=['GET', 'POST'])
+@login_required
+def student_pay(cycle_id):
+    user = get_current_user()
+    
+    if user.role != 'student':
+        flash('Access denied', 'error')
+        return redirect(url_for('home'))
+    
+    cycle = PaymentCycle.query.get_or_404(cycle_id)
+    
+    if cycle.student_id != user.id:
+        flash('Access denied', 'error')
+        return redirect(url_for('student_dashboard'))
+    
+    if request.method == 'POST':
+        # Handle screenshot upload
+        if 'screenshot' in request.files:
+            file = request.files['screenshot']
+            if file.filename:
+                filename = f"payment_{cycle_id}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.png"
+                filepath = os.path.join('static', 'payments', filename)
+                os.makedirs(os.path.dirname(filepath), exist_ok=True)
+                file.save(filepath)
+                cycle.payment_screenshot = filepath
+                cycle.status = 'pending_verification'
+                db.session.commit()
+                
+                # Notify admin
+                send_admin_notification(
+                    f"Payment Received - {user.first_name} {user.last_name}",
+                    f"""
+                    <h2>Payment Screenshot Uploaded</h2>
+                    <p><strong>Student:</strong> {user.first_name} {user.last_name}</p>
+                    <p><strong>Amount:</strong> ₹{cycle.total_amount}</p>
+                    <p><strong>Teacher:</strong> {cycle.teacher.first_name} {cycle.teacher.last_name}</p>
+                    <p>Please verify in admin panel.</p>
+                    """
+                )
+                
+                flash('Payment screenshot uploaded! We will verify and confirm soon.', 'success')
+                return redirect(url_for('student_classes'))
+    
+    return render_template('student_pay.html',
+                         current_user=user,
+                         cycle=cycle,
+                         upi_id='mahapatravinayak@okaxis')  # Tera UPI ID yahan daal
+
+@app.route('/teacher/log-class', methods=['GET', 'POST'])
+@login_required
+def teacher_log_class():
+    user = get_current_user()
+    
+    if user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('home'))
+    
+    # Get teacher's active students
+    accepted_requests = TutorRequest.query.filter_by(
+        teacher_id=user.id,
+        status='accepted'
+    ).all()
+    
+    if request.method == 'POST':
+        student_id = request.form.get('student_id')
+        request_id = request.form.get('request_id')
+        duration = float(request.form.get('duration', 1))
+        notes = request.form.get('notes', '')
+        class_date = request.form.get('class_date')
+        
+        hourly_rate = user.teacher_profile.hourly_rate
+        amount = int(duration * hourly_rate)
+        
+        # Create class session
+        session_record = ClassSession(
+            student_id=student_id,
+            teacher_id=user.id,
+            request_id=request_id,
+            date=datetime.strptime(class_date, '%Y-%m-%d').date(),
+            duration_hours=duration,
+            hourly_rate=hourly_rate,
+            amount=amount,
+            notes=notes
+        )
+        db.session.add(session_record)
+        
+        # Update or create payment cycle
+        cycle = PaymentCycle.query.filter_by(
+            student_id=student_id,
+            teacher_id=user.id,
+            status='active'
+        ).first()
+        
+        if not cycle:
+            cycle = PaymentCycle(
+                student_id=student_id,
+                teacher_id=user.id,
+                start_date=datetime.utcnow().date()
+            )
+            db.session.add(cycle)
+        
+        cycle.total_classes += 1
+        cycle.total_amount += amount
+        cycle.commission = int(cycle.total_amount * 0.10)
+        cycle.teacher_earning = cycle.total_amount - cycle.commission
+        
+        # Check if 25 classes reached
+        if cycle.total_classes >= 25:
+            cycle.status = 'pending_payment'
+            cycle.end_date = datetime.utcnow().date()
+            # TODO: Send email to student
+        
+        db.session.commit()
+        flash(f'Class logged! ₹{amount} added to billing.', 'success')
+        return redirect(url_for('teacher_log_class'))
+    
+    return render_template('teacher_log_class.html', 
+                         current_user=user, 
+                         accepted_requests=accepted_requests)
+
+
+@app.route('/teacher/my-earnings')
+@login_required
+def teacher_earnings():
+    user = get_current_user()
+    
+    if user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('home'))
+    
+    # Get all payment cycles for this teacher
+    cycles = PaymentCycle.query.filter_by(teacher_id=user.id).order_by(PaymentCycle.created_at.desc()).all()
+    
+    # Calculate totals
+    total_earned = sum(c.teacher_earning for c in cycles if c.status == 'paid')
+    pending_amount = sum(c.teacher_earning for c in cycles if c.status == 'pending_payment')
+    
+    return render_template('teacher_earnings.html',
+                         current_user=user,
+                         cycles=cycles,
+                         total_earned=total_earned,
+                         pending_amount=pending_amount)
 
 # ===== ADMIN EXPORT ROUTES =====
 
@@ -881,6 +1184,314 @@ def export_teachers():
     output.headers["Content-Disposition"] = "attachment; filename=vaanyan_teachers.csv"
     output.headers["Content-type"] = "text/csv"
     return output
+# ===== PAYMENT SYSTEM - ADD TO app.py =====
+# Copy paste these into your app.py file
+
+# ============================================
+# STEP 1: Add these MODELS after existing models
+# ============================================
+
+class ClassSession(db.Model):
+    __tablename__ = 'class_sessions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    teacher_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    request_id = db.Column(db.Integer, db.ForeignKey('tutor_requests.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    duration_hours = db.Column(db.Float, default=1.0)
+    hourly_rate = db.Column(db.Integer, nullable=False)
+    amount = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(20), default='completed')
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    student = db.relationship('User', foreign_keys=[student_id], backref='student_sessions')
+    teacher = db.relationship('User', foreign_keys=[teacher_id], backref='teacher_sessions')
+
+
+class PaymentCycle(db.Model):
+    __tablename__ = 'payment_cycles'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    teacher_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date)
+    total_classes = db.Column(db.Integer, default=0)
+    total_amount = db.Column(db.Integer, default=0)
+    commission = db.Column(db.Integer, default=0)
+    teacher_earning = db.Column(db.Integer, default=0)
+    status = db.Column(db.String(20), default='active')
+    payment_screenshot = db.Column(db.String(500))
+    payment_verified_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    student = db.relationship('User', foreign_keys=[student_id], backref='student_payments')
+    teacher = db.relationship('User', foreign_keys=[teacher_id], backref='teacher_payments')
+
+
+# ============================================
+# STEP 2: Add these ROUTES after existing routes
+# ============================================
+
+# ----- TEACHER: Log Class -----
+@app.route('/teacher/log-class', methods=['GET', 'POST'])
+@login_required
+def teacher_log_class():
+    user = get_current_user()
+    
+    if user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('home'))
+    
+    accepted_requests = TutorRequest.query.filter_by(
+        teacher_id=user.id,
+        status='accepted'
+    ).all()
+    
+    if request.method == 'POST':
+        student_id = request.form.get('student_id')
+        request_id = request.form.get('request_id')
+        duration = float(request.form.get('duration', 1))
+        notes = request.form.get('notes', '')
+        class_date = request.form.get('class_date')
+        
+        hourly_rate = user.teacher_profile.hourly_rate
+        amount = int(duration * hourly_rate)
+        
+        session_record = ClassSession(
+            student_id=student_id,
+            teacher_id=user.id,
+            request_id=request_id,
+            date=datetime.strptime(class_date, '%Y-%m-%d').date(),
+            duration_hours=duration,
+            hourly_rate=hourly_rate,
+            amount=amount,
+            notes=notes
+        )
+        db.session.add(session_record)
+        
+        cycle = PaymentCycle.query.filter_by(
+            student_id=student_id,
+            teacher_id=user.id,
+            status='active'
+        ).first()
+        
+        if not cycle:
+            cycle = PaymentCycle(
+                student_id=student_id,
+                teacher_id=user.id,
+                start_date=datetime.utcnow().date()
+            )
+            db.session.add(cycle)
+        
+        cycle.total_classes += 1
+        cycle.total_amount += amount
+        cycle.commission = int(cycle.total_amount * 0.10)
+        cycle.teacher_earning = cycle.total_amount - cycle.commission
+        
+        if cycle.total_classes >= 25:
+            cycle.status = 'pending_payment'
+            cycle.end_date = datetime.utcnow().date()
+        
+        db.session.commit()
+        flash(f'Class logged! ₹{amount} added to billing.', 'success')
+        return redirect(url_for('teacher_log_class'))
+    
+    today = datetime.utcnow().strftime('%Y-%m-%d')
+    return render_template('teacher_log_class.html', 
+                         current_user=user, 
+                         accepted_requests=accepted_requests,
+                         today=today)
+
+
+# ----- TEACHER: View Earnings -----
+@app.route('/teacher/my-earnings')
+@login_required
+def teacher_earnings():
+    user = get_current_user()
+    
+    if user.role != 'teacher':
+        flash('Access denied', 'error')
+        return redirect(url_for('home'))
+    
+    cycles = PaymentCycle.query.filter_by(teacher_id=user.id).order_by(PaymentCycle.created_at.desc()).all()
+    
+    total_earned = sum(c.teacher_earning for c in cycles if c.status == 'paid')
+    pending_amount = sum(c.teacher_earning for c in cycles if c.status in ['pending_payment', 'pending_verification'])
+    
+    return render_template('teacher_earnings.html',
+                         current_user=user,
+                         cycles=cycles,
+                         total_earned=total_earned,
+                         pending_amount=pending_amount)
+
+
+# ----- STUDENT: View Classes -----
+@app.route('/student/my-classes')
+@login_required
+def student_classes():
+    user = get_current_user()
+    
+    if user.role != 'student':
+        flash('Access denied', 'error')
+        return redirect(url_for('home'))
+    
+    sessions = ClassSession.query.filter_by(student_id=user.id).order_by(ClassSession.date.desc()).all()
+    
+    active_cycles = PaymentCycle.query.filter_by(
+        student_id=user.id,
+        status='active'
+    ).all()
+    
+    pending_payments = PaymentCycle.query.filter(
+        PaymentCycle.student_id == user.id,
+        PaymentCycle.status.in_(['pending_payment', 'pending_verification'])
+    ).all()
+    
+    return render_template('student_classes.html',
+                         current_user=user,
+                         sessions=sessions,
+                         active_cycles=active_cycles,
+                         pending_payments=pending_payments)
+
+
+# ----- STUDENT: Pay -----
+@app.route('/student/pay/<int:cycle_id>', methods=['GET', 'POST'])
+@login_required
+def student_pay(cycle_id):
+    user = get_current_user()
+    
+    if user.role != 'student':
+        flash('Access denied', 'error')
+        return redirect(url_for('home'))
+    
+    cycle = PaymentCycle.query.get_or_404(cycle_id)
+    
+    if cycle.student_id != user.id:
+        flash('Access denied', 'error')
+        return redirect(url_for('student_dashboard'))
+    
+    if request.method == 'POST':
+        if 'screenshot' in request.files:
+            file = request.files['screenshot']
+            if file.filename:
+                payments_dir = os.path.join('static', 'payments')
+                os.makedirs(payments_dir, exist_ok=True)
+                
+                filename = f"payment_{cycle_id}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.png"
+                filepath = os.path.join(payments_dir, filename)
+                file.save(filepath)
+                
+                cycle.payment_screenshot = filepath
+                cycle.status = 'pending_verification'
+                db.session.commit()
+                
+                send_admin_notification(
+                    f"Payment Received - {user.first_name} {user.last_name}",
+                    f"""
+                    <h2>💰 Payment Screenshot Uploaded</h2>
+                    <p><strong>Student:</strong> {user.first_name} {user.last_name}</p>
+                    <p><strong>Email:</strong> {user.email}</p>
+                    <p><strong>Amount:</strong> ₹{cycle.total_amount}</p>
+                    <p><strong>Teacher:</strong> {cycle.teacher.first_name} {cycle.teacher.last_name}</p>
+                    <p><strong>Classes:</strong> {cycle.total_classes}</p>
+                    <br>
+                    <p>Please verify in admin panel.</p>
+                    """
+                )
+                
+                flash('Payment screenshot uploaded! We will verify and confirm soon.', 'success')
+                return redirect(url_for('student_classes'))
+    
+    return render_template('student_pay.html',
+                         current_user=user,
+                         cycle=cycle,
+                         upi_id='9012977681@ybl')
+
+
+# ----- ADMIN: View Payments -----
+@app.route('/admin/payments')
+@login_required
+def admin_payments():
+    user = get_current_user()
+    
+    if user.role != 'admin':
+        flash('Access denied', 'error')
+        return redirect(url_for('home'))
+    
+    pending = PaymentCycle.query.filter_by(status='pending_verification').all()
+    completed = PaymentCycle.query.filter_by(status='paid').order_by(PaymentCycle.payment_verified_at.desc()).limit(20).all()
+    
+    total_commission = sum(c.commission for c in PaymentCycle.query.filter_by(status='paid').all())
+    
+    return render_template('admin_payments.html',
+                         current_user=user,
+                         pending=pending,
+                         completed=completed,
+                         total_commission=total_commission)
+
+
+# ----- ADMIN: Verify Payment -----
+@app.route('/admin/verify-payment/<int:cycle_id>', methods=['POST'])
+@login_required
+def admin_verify_payment(cycle_id):
+    user = get_current_user()
+    
+    if user.role != 'admin':
+        flash('Access denied', 'error')
+        return redirect(url_for('home'))
+    
+    cycle = PaymentCycle.query.get_or_404(cycle_id)
+    action = request.form.get('action')
+    
+    if action == 'approve':
+        cycle.status = 'paid'
+        cycle.payment_verified_at = datetime.utcnow()
+        
+        if cycle.teacher.teacher_profile:
+            cycle.teacher.teacher_profile.total_earnings += cycle.teacher_earning
+        
+        new_cycle = PaymentCycle(
+            student_id=cycle.student_id,
+            teacher_id=cycle.teacher_id,
+            start_date=datetime.utcnow().date()
+        )
+        db.session.add(new_cycle)
+        
+        flash(f'Payment verified! Teacher will receive ₹{cycle.teacher_earning}', 'success')
+        
+    elif action == 'reject':
+        cycle.status = 'pending_payment'
+        cycle.payment_screenshot = None
+        flash('Payment rejected. Student will need to re-upload screenshot.', 'error')
+    
+    db.session.commit()
+    return redirect(url_for('admin_payments'))
+
+
+# ----- ADMIN: Trigger Payment (Month end) -----
+@app.route('/admin/trigger-payment/<int:cycle_id>', methods=['POST'])
+@login_required
+def admin_trigger_payment(cycle_id):
+    user = get_current_user()
+    
+    if user.role != 'admin':
+        flash('Access denied', 'error')
+        return redirect(url_for('home'))
+    
+    cycle = PaymentCycle.query.get_or_404(cycle_id)
+    
+    if cycle.status == 'active' and cycle.total_classes > 0:
+        cycle.status = 'pending_payment'
+        cycle.end_date = datetime.utcnow().date()
+        db.session.commit()
+        flash(f'Payment cycle marked as due.', 'success')
+    else:
+        flash('Cannot trigger payment for this cycle.', 'error')
+    
+    return redirect(url_for('admin_payments'))
 
 # ===== INITIALIZE DATABASE =====
 

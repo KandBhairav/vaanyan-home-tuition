@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Management - Vaanyan Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: var(--gray-50); }
+        .admin-header {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 1.5rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+        .admin-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .page-content { padding: 2rem 0; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+        .stat-card.highlight {
+            background: var(--gradient-secondary);
+            color: var(--white);
+        }
+        .stat-card.highlight .stat-label {
+            color: rgba(255,255,255,0.9);
+        }
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            color: var(--white);
+        }
+        .stat-card.highlight .stat-icon {
+            background: rgba(255,255,255,0.2);
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .stat-label {
+            color: var(--gray-600);
+        }
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        .card-header {
+            background: var(--gray-50);
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-header h2 {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0;
+        }
+        .card-body { padding: 1.5rem; }
+        .pending-badge {
+            background: var(--warning);
+            color: var(--white);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .payment-item {
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.2s;
+        }
+        .payment-item:hover {
+            border-color: var(--royal-purple);
+            box-shadow: var(--shadow-md);
+        }
+        .payment-item.pending {
+            border-color: var(--warning);
+            background: rgba(245, 158, 11, 0.05);
+        }
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+        .payment-users h3 {
+            font-size: 1.125rem;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+        .payment-users p {
+            font-size: 0.9rem;
+            color: var(--gray-500);
+            margin: 0;
+        }
+        .payment-amount {
+            text-align: right;
+        }
+        .payment-amount .amount {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--royal-purple);
+        }
+        .payment-amount .label {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+        }
+        .payment-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+        }
+        .detail-item {
+            text-align: center;
+        }
+        .detail-item .value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        .detail-item .label {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+        }
+        .detail-item.commission .value {
+            color: var(--success);
+        }
+        .screenshot-preview {
+            margin-bottom: 1.5rem;
+        }
+        .screenshot-preview h4 {
+            color: var(--gray-700);
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+        .screenshot-preview img {
+            max-width: 300px;
+            max-height: 400px;
+            border-radius: var(--radius-lg);
+            border: 2px solid var(--gray-200);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .screenshot-preview img:hover {
+            transform: scale(1.02);
+        }
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        .btn-approve {
+            background: var(--success);
+            color: var(--white);
+            flex: 1;
+        }
+        .btn-approve:hover {
+            background: #059669;
+        }
+        .btn-reject {
+            background: var(--error);
+            color: var(--white);
+            flex: 1;
+        }
+        .btn-reject:hover {
+            background: #dc2626;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray-500);
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: var(--gray-300);
+        }
+        .completed-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            margin-bottom: 0.75rem;
+        }
+        .completed-info h4 {
+            color: var(--gray-900);
+            margin-bottom: 0.25rem;
+        }
+        .completed-info p {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            margin: 0;
+        }
+        .completed-amount {
+            text-align: right;
+        }
+        .completed-amount .total {
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        .completed-amount .commission {
+            font-size: 0.85rem;
+            color: var(--success);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: var(--radius-lg);
+        }
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: var(--white);
+            font-size: 2rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div class="container">
+            <div class="admin-header-content">
+                <div class="admin-logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Vaanyan Admin - Payments</span>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container page-content">
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card highlight">
+                <div class="stat-icon">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div class="stat-value">₹{{ total_commission }}</div>
+                <div class="stat-label">Total Commission Earned</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-value">{{ pending|length }}</div>
+                <div class="stat-label">Pending Verifications</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-value">{{ completed|length }}</div>
+                <div class="stat-label">Completed Payments</div>
+            </div>
+        </div>
+
+        <!-- Pending Payments -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-hourglass-half"></i> Pending Verifications</h2>
+                {% if pending|length > 0 %}
+                <span class="pending-badge">{{ pending|length }} Pending</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if pending and pending|length > 0 %}
+                    {% for payment in pending %}
+                    <div class="payment-item pending">
+                        <div class="payment-header">
+                            <div class="payment-users">
+                                <h3>{{ payment.student.first_name }} {{ payment.student.last_name }} → {{ payment.teacher.first_name }} {{ payment.teacher.last_name }}</h3>
+                                <p>
+                                    <i class="fas fa-envelope"></i> {{ payment.student.email }} |
+                                    <i class="fas fa-phone"></i> {{ payment.student.phone }}
+                                </p>
+                            </div>
+                            <div class="payment-amount">
+                                <div class="amount">₹{{ payment.total_amount }}</div>
+                                <div class="label">Total Amount</div>
+                            </div>
+                        </div>
+
+                        <div class="payment-details">
+                            <div class="detail-item">
+                                <div class="value">{{ payment.total_classes }}</div>
+                                <div class="label">Classes</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="value">₹{{ payment.teacher.teacher_profile.hourly_rate }}/hr</div>
+                                <div class="label">Hourly Rate</div>
+                            </div>
+                            <div class="detail-item commission">
+                                <div class="value">₹{{ payment.commission }}</div>
+                                <div class="label">Your Commission (10%)</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="value">₹{{ payment.teacher_earning }}</div>
+                                <div class="label">Teacher Gets (90%)</div>
+                            </div>
+                        </div>
+
+                        {% if payment.payment_screenshot %}
+                        <div class="screenshot-preview">
+                            <h4><i class="fas fa-image"></i> Payment Screenshot:</h4>
+                            <img src="{{ url_for('static', filename=payment.payment_screenshot.replace('static/', '')) }}" 
+                                 alt="Payment Screenshot" 
+                                 onclick="showModal(this.src)">
+                            <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 0.5rem;">
+                                Click image to enlarge
+                            </p>
+                        </div>
+                        {% endif %}
+
+                        <div class="action-buttons">
+                            <form method="POST" action="{{ url_for('admin_verify_payment', cycle_id=payment.id) }}" style="flex: 1;">
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit" class="btn btn-approve btn-full" onclick="return confirm('Approve this payment? Teacher will receive ₹{{ payment.teacher_earning }}')">
+                                    <i class="fas fa-check"></i> Approve Payment
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ url_for('admin_verify_payment', cycle_id=payment.id) }}" style="flex: 1;">
+                                <input type="hidden" name="action" value="reject">
+                                <button type="submit" class="btn btn-reject btn-full" onclick="return confirm('Reject this payment? Student will need to re-upload screenshot.')">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>No Pending Payments</h3>
+                    <p>All payment verifications are up to date!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Completed Payments -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-history"></i> Recent Completed Payments</h2>
+            </div>
+            <div class="card-body">
+                {% if completed and completed|length > 0 %}
+                    {% for payment in completed %}
+                    <div class="completed-item">
+                        <div class="completed-info">
+                            <h4>{{ payment.student.first_name }} {{ payment.student.last_name }} → {{ payment.teacher.first_name }} {{ payment.teacher.last_name }}</h4>
+                            <p>
+                                <i class="fas fa-calendar"></i> Verified: {{ payment.payment_verified_at.strftime('%b %d, %Y at %I:%M %p') }} |
+                                {{ payment.total_classes }} classes
+                            </p>
+                        </div>
+                        <div class="completed-amount">
+                            <div class="total">₹{{ payment.total_amount }}</div>
+                            <div class="commission">+₹{{ payment.commission }} commission</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-wallet"></i>
+                    <h3>No Completed Payments Yet</h3>
+                    <p>Verified payments will appear here</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div class="modal" id="imageModal" onclick="hideModal()">
+        <span class="modal-close">&times;</span>
+        <img id="modalImage" src="" alt="Screenshot">
+    </div>
+
+    <script>
+        function showModal(src) {
+            document.getElementById('modalImage').src = src;
+            document.getElementById('imageModal').classList.add('show');
+        }
+
+        function hideModal() {
+            document.getElementById('imageModal').classList.remove('show');
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideModal();
+            }
+        });
+    </script>
+</body>
+</html>
