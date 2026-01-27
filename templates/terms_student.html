@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Terms & Conditions - Vaanyan Home Tuition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: var(--gray-50);
+        }
+        .page-header {
+            background: var(--gradient-hero);
+            color: var(--white);
+            padding: 4rem 0;
+            text-align: center;
+        }
+        .page-header .icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.5rem;
+        }
+        .page-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .page-header p {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            color: var(--gray-200);
+        }
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+        .content-wrapper {
+            max-width: 900px;
+            margin: -3rem auto 3rem;
+            padding: 0 1.5rem;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray-600);
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+        .back-link:hover {
+            color: var(--royal-purple);
+        }
+        .terms-card {
+            background: var(--white);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+        }
+        .terms-nav {
+            background: var(--gray-50);
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .terms-nav a {
+            padding: 0.5rem 1rem;
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            transition: all 0.2s;
+        }
+        .terms-nav a:hover {
+            background: var(--gradient-primary);
+            color: var(--white);
+            border-color: transparent;
+        }
+        .terms-content {
+            padding: 2.5rem;
+        }
+        .section {
+            margin-bottom: 2.5rem;
+            padding-bottom: 2.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            color: var(--gray-900);
+            margin-bottom: 1.5rem;
+        }
+        .section-title i {
+            width: 45px;
+            height: 45px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 1.1rem;
+        }
+        .section p {
+            color: var(--gray-600);
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+        .section ul {
+            margin: 1rem 0;
+            padding-left: 0;
+        }
+        .section li {
+            color: var(--gray-600);
+            line-height: 1.8;
+            margin-bottom: 0.75rem;
+            padding-left: 2rem;
+            position: relative;
+            list-style: none;
+        }
+        .section li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--royal-purple);
+            font-weight: 700;
+            width: 24px;
+            height: 24px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+            border-left: 4px solid var(--royal-purple);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .highlight-box h4 {
+            color: var(--royal-purple);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .highlight-box p {
+            margin-bottom: 0;
+            color: var(--gray-700);
+        }
+        .warning-box {
+            background: var(--warning-light);
+            border-left: 4px solid var(--warning);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .warning-box h4 {
+            color: #92400e;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .warning-box p, .warning-box li {
+            color: #78350f;
+        }
+        .info-box {
+            background: var(--info-light);
+            border-left: 4px solid var(--info);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .info-box h4 {
+            color: #1e40af;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .info-box p {
+            color: #1e3a8a;
+            margin-bottom: 0;
+        }
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+        .payment-table th,
+        .payment-table td {
+            padding: 1rem 1.25rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .payment-table th {
+            background: var(--gradient-primary);
+            color: var(--white);
+            font-weight: 600;
+        }
+        .payment-table tr:nth-child(even) {
+            background: var(--gray-50);
+        }
+        .payment-table tr:last-child td {
+            border-bottom: none;
+        }
+        .step-list {
+            counter-reset: step;
+        }
+        .step-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            position: relative;
+        }
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .step-content h4 {
+            color: var(--gray-900);
+            margin-bottom: 0.25rem;
+        }
+        .step-content p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        .cta-section {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 2rem;
+            border-radius: var(--radius-xl);
+            text-align: center;
+            margin-top: 2rem;
+        }
+        .cta-section h3 {
+            color: var(--white);
+            margin-bottom: 0.5rem;
+        }
+        .cta-section p {
+            color: var(--gray-200);
+            margin-bottom: 1.5rem;
+        }
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 2rem;
+            }
+            .terms-content {
+                padding: 1.5rem;
+            }
+            .section-title {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="page-header">
+        <div class="container">
+            <div class="icon">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <h1>Student Terms & Conditions</h1>
+            <p>Terms and conditions for students using Vaanyan Home Tuition</p>
+            <span class="badge"><i class="fas fa-calendar-alt"></i> Last Updated: January 2026</span>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <a href="{{ url_for('terms_and_conditions') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Terms Overview
+        </a>
+
+        <div class="terms-card">
+            <!-- Navigation -->
+            <nav class="terms-nav">
+                <a href="#overview">Overview</a>
+                <a href="#registration">Registration</a>
+                <a href="#demo">Demo Classes</a>
+                <a href="#payment">Payment</a>
+                <a href="#responsibilities">Responsibilities</a>
+                <a href="#cancellation">Cancellation</a>
+                <a href="#refund">Refund</a>
+            </nav>
+
+            <!-- Content -->
+            <div class="terms-content">
+                <!-- Overview -->
+                <section class="section" id="overview">
+                    <h2 class="section-title">
+                        <i class="fas fa-book-open"></i>
+                        1. Overview
+                    </h2>
+                    <p>Welcome to Vaanyan Home Tuition! As a student, you can find and connect with qualified home tutors in your area. These terms explain how our platform works and what you need to know.</p>
+                    
+                    <div class="highlight-box">
+                        <h4><i class="fas fa-star"></i> What We Offer</h4>
+                        <p>Access to verified tutors, flexible scheduling, secure payment processing, and quality education at your doorstep or online.</p>
+                    </div>
+                </section>
+
+                <!-- Registration -->
+                <section class="section" id="registration">
+                    <h2 class="section-title">
+                        <i class="fas fa-user-plus"></i>
+                        2. Registration
+                    </h2>
+                    <p>To use our platform, you need to create an account:</p>
+                    <ul>
+                        <li>Provide your real name, email, phone number, and address</li>
+                        <li>Select your grade/class and board (CBSE, ICSE, State Board, etc.)</li>
+                        <li>Choose subjects you need help with</li>
+                        <li>Students under 18 should register with parental consent</li>
+                        <li>Keep your login credentials secure and do not share with others</li>
+                    </ul>
+                </section>
+
+                <!-- Demo Classes -->
+                <section class="section" id="demo">
+                    <h2 class="section-title">
+                        <i class="fas fa-gift"></i>
+                        3. Demo Classes
+                    </h2>
+                    <p>We offer free demo classes so you can evaluate a tutor before committing:</p>
+                    
+                    <div class="info-box">
+                        <h4><i class="fas fa-info-circle"></i> Demo Class Policy</h4>
+                        <p>You are entitled to <strong>2 FREE demo classes</strong> with any tutor. Demo classes are only available when you plan to take monthly tuition (not for one-time classes).</p>
+                    </div>
+
+                    <ul>
+                        <li>Demo classes are 1 hour each</li>
+                        <li>Use demos to evaluate teaching style and compatibility</li>
+                        <li>After demos, decide if you want to continue with the tutor</li>
+                        <li>Demo classes cannot be misused - they are only for genuine evaluation</li>
+                        <li>Taking only demo classes without intention to continue is not allowed</li>
+                    </ul>
+
+                    <div class="warning-box">
+                        <h4><i class="fas fa-exclamation-triangle"></i> Important</h4>
+                        <p>Misusing demo classes (taking demos from multiple tutors without genuine interest) may result in account suspension.</p>
+                    </div>
+                </section>
+
+                <!-- Payment -->
+                <section class="section" id="payment">
+                    <h2 class="section-title">
+                        <i class="fas fa-credit-card"></i>
+                        4. Payment Policy
+                    </h2>
+                    <p>Our payment system is simple and transparent:</p>
+
+                    <table class="payment-table">
+                        <tr>
+                            <th>Item</th>
+                            <th>Details</th>
+                        </tr>
+                        <tr>
+                            <td>Billing Basis</td>
+                            <td>Teacher's hourly rate × Hours of classes taken</td>
+                        </tr>
+                        <tr>
+                            <td>Payment Cycle</td>
+                            <td><strong>25 classes</strong> or <strong>1 month</strong> (whichever comes first)</td>
+                        </tr>
+                        <tr>
+                            <td>Payment Method</td>
+                            <td>UPI (GPay, PhonePe, Paytm, etc.)</td>
+                        </tr>
+                        <tr>
+                            <td>Payment Process</td>
+                            <td>Pay to Vaanyan UPI → Upload screenshot → Verification</td>
+                        </tr>
+                        <tr>
+                            <td>Payment Due</td>
+                            <td>Within 3 days of cycle completion</td>
+                        </tr>
+                    </table>
+
+                    <h4 style="margin-top: 1.5rem; color: var(--gray-900);">How Payment Works:</h4>
+                    <div class="step-list">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Classes Logged</h4>
+                                <p>Your teacher logs each completed class on the platform</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>Cycle Completes</h4>
+                                <p>After 25 classes or 1 month, payment becomes due</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>Pay via UPI</h4>
+                                <p>Pay the total amount to Vaanyan's UPI ID</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h4>Upload Proof</h4>
+                                <p>Upload payment screenshot on the platform</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <h4>Verification</h4>
+                                <p>We verify and your learning continues!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h4><i class="fas fa-calculator"></i> Example Calculation</h4>
+                        <p>If your teacher charges ₹400/hour and you take 15 classes (1 hour each) in a month:</p>
+                        <p style="margin-top: 0.5rem;"><strong>Total Payment = ₹400 × 15 = ₹6,000</strong></p>
+                    </div>
+                </section>
+
+                <!-- Responsibilities -->
+                <section class="section" id="responsibilities">
+                    <h2 class="section-title">
+                        <i class="fas fa-tasks"></i>
+                        5. Your Responsibilities
+                    </h2>
+                    <p>As a student, you agree to:</p>
+                    <ul>
+                        <li>Treat your tutor with respect and courtesy</li>
+                        <li>Be punctual for scheduled classes</li>
+                        <li>Inform your tutor at least 24 hours in advance if you need to cancel</li>
+                        <li>Provide a suitable learning environment for home tuition</li>
+                        <li>Complete homework and assignments given by the tutor</li>
+                        <li>Make payments on time as per the payment cycle</li>
+                        <li>Give honest feedback about your learning experience</li>
+                        <li>Do not contact tutors outside the platform to avoid fees</li>
+                        <li>Do not share tutor's personal contact with others</li>
+                    </ul>
+
+                    <div class="warning-box">
+                        <h4><i class="fas fa-ban"></i> Prohibited Actions</h4>
+                        <p>Contacting tutors outside Vaanyan to bypass platform fees is strictly prohibited and will result in account termination.</p>
+                    </div>
+                </section>
+
+                <!-- Cancellation -->
+                <section class="section" id="cancellation">
+                    <h2 class="section-title">
+                        <i class="fas fa-calendar-times"></i>
+                        6. Cancellation Policy
+                    </h2>
+                    <p>We understand plans can change. Here's our cancellation policy:</p>
+                    <ul>
+                        <li><strong>24+ hours notice:</strong> Cancel free of charge</li>
+                        <li><strong>Less than 24 hours:</strong> Class may be counted as taken</li>
+                        <li><strong>No-show:</strong> Class will be counted and billed</li>
+                        <li><strong>Teacher cancellation:</strong> You'll get a makeup class or credit</li>
+                    </ul>
+
+                    <div class="info-box">
+                        <h4><i class="fas fa-lightbulb"></i> Tip</h4>
+                        <p>Always communicate with your tutor through the platform chat for any schedule changes.</p>
+                    </div>
+                </section>
+
+                <!-- Refund -->
+                <section class="section" id="refund">
+                    <h2 class="section-title">
+                        <i class="fas fa-undo-alt"></i>
+                        7. Refund Policy
+                    </h2>
+                    <p>Our refund policy:</p>
+                    <ul>
+                        <li>You only pay for classes actually taken</li>
+                        <li>If you stop mid-cycle, pay only for completed classes</li>
+                        <li>Disputes must be raised within 7 days</li>
+                        <li>Refunds (if applicable) will be processed within 7-10 days</li>
+                        <li>Demo classes are free and non-refundable</li>
+                    </ul>
+
+                    <div class="highlight-box">
+                        <h4><i class="fas fa-shield-alt"></i> Quality Guarantee</h4>
+                        <p>Not satisfied with your tutor? Contact us within the first 5 paid classes for a free tutor change.</p>
+                    </div>
+                </section>
+
+                <!-- CTA -->
+                <div class="cta-section">
+                    <h3><i class="fas fa-rocket"></i> Ready to Start Learning?</h3>
+                    <p>By registering, you agree to these terms and conditions</p>
+                    <a href="{{ url_for('student_registration') }}" class="btn btn-secondary">
+                        <i class="fas fa-user-plus"></i> Register as Student
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
