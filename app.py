@@ -39,7 +39,9 @@ app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', 'mahapatravinayak@gmail.com')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', 'wrdb okdi macb zxim')
-app.config['ADMIN_EMAIL'] = os.environ.get('ADMIN_EMAIL', 'mahapatravinayak@gmail.com')
+
+# Admin notification emails
+ADMIN_EMAILS = ['mahapatravinayak@gmail.com', 'nitin.rawat2@gmail.com']
 
 # Initialize database
 db = SQLAlchemy(app)
@@ -205,17 +207,19 @@ def get_current_user():
 
 
 def send_admin_notification(subject, body):
+    """Send email notification to all admin emails"""
     try:
-        msg = MIMEMultipart()
-        msg['From'] = app.config['MAIL_USERNAME']
-        msg['To'] = app.config['ADMIN_EMAIL']
-        msg['Subject'] = subject
-        msg.attach(MIMEText(body, 'html'))
-        server = smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT'])
-        server.starttls()
-        server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-        server.send_message(msg)
-        server.quit()
+        for recipient in ADMIN_EMAILS:
+            msg = MIMEMultipart()
+            msg['From'] = app.config['MAIL_USERNAME']
+            msg['To'] = recipient
+            msg['Subject'] = subject
+            msg.attach(MIMEText(body, 'html'))
+            server = smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT'])
+            server.starttls()
+            server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+            server.send_message(msg)
+            server.quit()
         return True
     except Exception as e:
         print(f"Email failed: {e}")
@@ -298,6 +302,51 @@ def student_registration():
         student_profile = StudentProfile(user_id=user.id, grade=grade, board=board, subjects=','.join(subjects), city=city, address=address)
         db.session.add(student_profile)
         db.session.commit()
+
+        # Send email notification
+        send_admin_notification(
+            subject=f"🎓 New Student Registered - {first_name} {last_name}",
+            body=f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: linear-gradient(135deg, #6b21a8, #9333ea); padding: 20px; border-radius: 10px 10px 0 0;">
+                    <h2 style="color: white; margin: 0;">🎓 New Student Registered!</h2>
+                    <p style="color: #e9d5ff; margin: 5px 0 0;">Vaanyan Home Tuition</p>
+                </div>
+                <div style="background: #f9fafb; padding: 20px; border-radius: 0 0 10px 10px;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 10px; font-weight: bold; color: #374151; width: 40%;">Name</td>
+                            <td style="padding: 10px; color: #6b7280;">{first_name} {last_name}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 10px; font-weight: bold; color: #374151;">Email</td>
+                            <td style="padding: 10px; color: #6b7280;">{email}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 10px; font-weight: bold; color: #374151;">Phone</td>
+                            <td style="padding: 10px; color: #6b7280;">{phone}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 10px; font-weight: bold; color: #374151;">Grade</td>
+                            <td style="padding: 10px; color: #6b7280;">{grade} ({board})</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 10px; font-weight: bold; color: #374151;">City</td>
+                            <td style="padding: 10px; color: #6b7280;">{city}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; font-weight: bold; color: #374151;">Subjects</td>
+                            <td style="padding: 10px; color: #6b7280;">{', '.join(subjects)}</td>
+                        </tr>
+                    </table>
+                    <p style="margin-top: 20px; color: #9ca3af; font-size: 12px;">
+                        Registered on {datetime.utcnow().strftime('%d %b %Y at %I:%M %p')} UTC
+                    </p>
+                </div>
+            </div>
+            """
+        )
+
         flash('Registration successful! Please login', 'success')
         return redirect(url_for('login'))
     return render_template('student_registration.html')
@@ -335,6 +384,63 @@ def teacher_registration():
         teacher_profile = TeacherProfile(user_id=user.id, qualification=qualification, experience=experience, subjects=','.join(subjects), teaching_mode=','.join(teaching_mode), hourly_rate=int(hourly_rate), bio=bio, city=city, address=address)
         db.session.add(teacher_profile)
         db.session.commit()
+
+        # Send email notification
+        send_admin_notification(
+            subject=f"👨‍🏫 New Teacher Registered - {first_name} {last_name}",
+            body=f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: linear-gradient(135deg, #b45309, #d97706); padding: 20px; border-radius: 10px 10px 0 0;">
+                    <h2 style="color: white; margin: 0;">👨‍🏫 New Teacher Registered!</h2>
+                    <p style="color: #fef3c7; margin: 5px 0 0;">Vaanyan Home Tuition</p>
+                </div>
+                <div style="background: #f9fafb; padding: 20px; border-radius: 0 0 10px 10px;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 10px; font-weight: bold; color: #374151; width: 40%;">Name</td>
+                            <td style="padding: 10px; color: #6b7280;">{first_name} {last_name}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 10px; font-weight: bold; color: #374151;">Email</td>
+                            <td style="padding: 10px; color: #6b7280;">{email}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 10px; font-weight: bold; color: #374151;">Phone</td>
+                            <td style="padding: 10px; color: #6b7280;">{phone}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 10px; font-weight: bold; color: #374151;">Qualification</td>
+                            <td style="padding: 10px; color: #6b7280;">{qualification}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 10px; font-weight: bold; color: #374151;">Experience</td>
+                            <td style="padding: 10px; color: #6b7280;">{experience}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 10px; font-weight: bold; color: #374151;">City</td>
+                            <td style="padding: 10px; color: #6b7280;">{city}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 10px; font-weight: bold; color: #374151;">Rate/hr</td>
+                            <td style="padding: 10px; color: #6b7280;">₹{hourly_rate}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 10px; font-weight: bold; color: #374151;">Subjects</td>
+                            <td style="padding: 10px; color: #6b7280;">{', '.join(subjects)}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; font-weight: bold; color: #374151;">Teaching Mode</td>
+                            <td style="padding: 10px; color: #6b7280;">{', '.join(teaching_mode)}</td>
+                        </tr>
+                    </table>
+                    <p style="margin-top: 20px; color: #9ca3af; font-size: 12px;">
+                        Registered on {datetime.utcnow().strftime('%d %b %Y at %I:%M %p')} UTC
+                    </p>
+                </div>
+            </div>
+            """
+        )
+
         flash('Registration successful! Please login', 'success')
         return redirect(url_for('login'))
     return render_template('teacher_registration.html')
@@ -485,6 +591,52 @@ def send_tutor_request():
     tutor_request = TutorRequest(student_id=user.id, teacher_id=teacher_id, subject=subject, message=message, status='pending')
     db.session.add(tutor_request)
     db.session.commit()
+
+    # Send email notification
+    teacher = User.query.get(teacher_id)
+    send_admin_notification(
+        subject=f"🤝 New Connection Request - {user.first_name} {user.last_name} → {teacher.first_name} {teacher.last_name}",
+        body=f"""
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: linear-gradient(135deg, #065f46, #059669); padding: 20px; border-radius: 10px 10px 0 0;">
+                <h2 style="color: white; margin: 0;">🤝 New Tutor Request!</h2>
+                <p style="color: #d1fae5; margin: 5px 0 0;">Vaanyan Home Tuition</p>
+            </div>
+            <div style="background: #f9fafb; padding: 20px; border-radius: 0 0 10px 10px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 10px; font-weight: bold; color: #374151; width: 40%;">Student</td>
+                        <td style="padding: 10px; color: #6b7280;">{user.first_name} {user.last_name}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 10px; font-weight: bold; color: #374151;">Student Email</td>
+                        <td style="padding: 10px; color: #6b7280;">{user.email}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 10px; font-weight: bold; color: #374151;">Student Phone</td>
+                        <td style="padding: 10px; color: #6b7280;">{user.phone}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 10px; font-weight: bold; color: #374151;">Teacher</td>
+                        <td style="padding: 10px; color: #6b7280;">{teacher.first_name} {teacher.last_name}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 10px; font-weight: bold; color: #374151;">Subject</td>
+                        <td style="padding: 10px; color: #6b7280;">{subject}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; font-weight: bold; color: #374151;">Message</td>
+                        <td style="padding: 10px; color: #6b7280;">{message}</td>
+                    </tr>
+                </table>
+                <p style="margin-top: 20px; color: #9ca3af; font-size: 12px;">
+                    Request sent on {datetime.utcnow().strftime('%d %b %Y at %I:%M %p')} UTC
+                </p>
+            </div>
+        </div>
+        """
+    )
+
     flash('Request sent successfully! The tutor will respond soon.', 'success')
     return redirect(url_for('student_dashboard'))
 
@@ -660,6 +812,50 @@ def student_pay(cycle_id):
                 cycle.payment_screenshot = filepath
                 cycle.status = 'pending_verification'
                 db.session.commit()
+
+                # Send payment notification
+                send_admin_notification(
+                    subject=f"💰 Payment Screenshot Uploaded - ₹{cycle.total_amount}",
+                    body=f"""
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <div style="background: linear-gradient(135deg, #1e40af, #3b82f6); padding: 20px; border-radius: 10px 10px 0 0;">
+                            <h2 style="color: white; margin: 0;">💰 Payment Screenshot Uploaded!</h2>
+                            <p style="color: #bfdbfe; margin: 5px 0 0;">Vaanyan Home Tuition - Action Required</p>
+                        </div>
+                        <div style="background: #f9fafb; padding: 20px; border-radius: 0 0 10px 10px;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr style="border-bottom: 1px solid #e5e7eb;">
+                                    <td style="padding: 10px; font-weight: bold; color: #374151; width: 40%;">Student</td>
+                                    <td style="padding: 10px; color: #6b7280;">{user.first_name} {user.last_name}</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e5e7eb;">
+                                    <td style="padding: 10px; font-weight: bold; color: #374151;">Teacher</td>
+                                    <td style="padding: 10px; color: #6b7280;">{cycle.teacher.first_name} {cycle.teacher.last_name}</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e5e7eb;">
+                                    <td style="padding: 10px; font-weight: bold; color: #374151;">Total Amount</td>
+                                    <td style="padding: 10px; color: #6b7280;">₹{cycle.total_amount}</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e5e7eb;">
+                                    <td style="padding: 10px; font-weight: bold; color: #374151;">Commission (10%)</td>
+                                    <td style="padding: 10px; color: #6b7280;">₹{cycle.commission}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px; font-weight: bold; color: #374151;">Teacher Earning</td>
+                                    <td style="padding: 10px; color: #6b7280;">₹{cycle.teacher_earning}</td>
+                                </tr>
+                            </table>
+                            <p style="margin-top: 15px; background: #fef3c7; padding: 10px; border-radius: 8px; color: #92400e;">
+                                ⚠️ Please verify this payment in the admin panel and approve/reject it.
+                            </p>
+                            <p style="color: #9ca3af; font-size: 12px;">
+                                Uploaded on {datetime.utcnow().strftime('%d %b %Y at %I:%M %p')} UTC
+                            </p>
+                        </div>
+                    </div>
+                    """
+                )
+
                 flash('Payment screenshot uploaded! We will verify and confirm soon.', 'success')
                 return redirect(url_for('student_classes'))
     return render_template('student_pay.html', current_user=user, cycle=cycle, upi_id='9012977681@ybl')
