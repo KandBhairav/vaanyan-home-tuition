@@ -37,9 +37,13 @@
             box-shadow: var(--shadow-lg);
             overflow: hidden;
         }
+        .table-scroll {
+            overflow-x: auto;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 1100px;
         }
         thead {
             background: var(--gradient-primary);
@@ -49,10 +53,12 @@
             padding: 1rem;
             text-align: left;
             font-weight: 600;
+            white-space: nowrap;
         }
         td {
             padding: 1rem;
             border-bottom: 1px solid var(--gray-200);
+            vertical-align: middle;
         }
         tr:hover {
             background: var(--gray-50);
@@ -72,6 +78,7 @@
             justify-content: center;
             color: var(--white);
             font-weight: 700;
+            flex-shrink: 0;
         }
         .student-badge {
             display: inline-block;
@@ -81,10 +88,17 @@
             border-radius: var(--radius-lg);
             font-size: 0.8rem;
             margin-right: 0.5rem;
+            margin-bottom: 0.25rem;
         }
         .earnings-cell {
             font-weight: 700;
             color: var(--royal-purple);
+        }
+        .btn-view {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -122,77 +136,79 @@
         </div>
 
         <div class="teachers-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Teacher</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Qualification</th>
-                        <th>City</th>
-                        <th>Students</th>
-                        <th>Rate/hr</th>
-                        <th>Earnings</th>
-                        <th>Commission (10%)</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for data in teacher_data %}
-                    <tr>
-                        <td>
-                            <div class="user-cell">
-                                <div class="user-avatar-table">
-                                    {{ data.teacher.first_name[0] }}{{ data.teacher.last_name[0] }}
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Teacher</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Qualification</th>
+                            <th>City</th>
+                            <th>Students</th>
+                            <th>Rate/hr</th>
+                            <th>Earnings</th>
+                            <th>Commission (10%)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in teacher_data %}
+                        <tr>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="user-avatar-table">
+                                        {{ data.teacher.first_name[0] }}{{ data.teacher.last_name[0] }}
+                                    </div>
+                                    <div>
+                                        <strong>{{ data.teacher.first_name }} {{ data.teacher.last_name }}</strong>
+                                    </div>
                                 </div>
-                                <div>
-                                    <strong>{{ data.teacher.first_name }} {{ data.teacher.last_name }}</strong>
-                                </div>
-                            </div>
-                        </td>
-                        <td>{{ data.teacher.email }}</td>
-                        <td>{{ data.teacher.phone }}</td>
-                        <td>
-                            {% if data.teacher.teacher_profile %}
-                            {{ data.teacher.teacher_profile.qualification }}
-                            {% else %}
-                            N/A
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if data.teacher.teacher_profile %}
-                            {{ data.teacher.teacher_profile.city }}
-                            {% else %}
-                            N/A
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if data.students %}
-                                {% for student in data.students %}
-                                <span class="student-badge">{{ student.first_name }} {{ student.last_name }}</span>
-                                {% endfor %}
-                            {% else %}
-                                <span style="color: var(--gray-500);">No students</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if data.teacher.teacher_profile %}
-                            ₹{{ data.teacher.teacher_profile.hourly_rate }}
-                            {% else %}
-                            N/A
-                            {% endif %}
-                        </td>
-                        <td class="earnings-cell">₹{{ data.total_earnings }}</td>
-                        <td class="earnings-cell">₹{{ data.commission }}</td>
-                        <td>
-                            <a href="{{ url_for('admin_user_detail', user_id=data.teacher.id) }}" class="btn btn-primary btn-sm">
-                                <i class="fas fa-eye"></i> View
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            </td>
+                            <td>{{ data.teacher.email }}</td>
+                            <td>{{ data.teacher.phone }}</td>
+                            <td>
+                                {% if data.teacher.teacher_profile %}
+                                {{ data.teacher.teacher_profile.qualification }}
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if data.teacher.teacher_profile %}
+                                {{ data.teacher.teacher_profile.city }}
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if data.students %}
+                                    {% for student in data.students %}
+                                    <span class="student-badge">{{ student.first_name }} {{ student.last_name }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span style="color: var(--gray-500);">No students</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if data.teacher.teacher_profile %}
+                                ₹{{ data.teacher.teacher_profile.hourly_rate }}
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </td>
+                            <td class="earnings-cell">₹{{ data.total_earnings }}</td>
+                            <td class="earnings-cell">₹{{ data.commission }}</td>
+                            <td>
+                                <a href="{{ url_for('admin_user_detail', user_id=data.teacher.id) }}" class="btn btn-primary btn-sm btn-view">
+                                    <i class="fas fa-eye"></i> View Detail
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </body>
