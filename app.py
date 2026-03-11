@@ -224,7 +224,117 @@ def send_admin_notification(subject, body):
     except Exception as e:
         print(f"Email failed: {e}")
         return False
+def send_welcome_email(teacher_email, teacher_name, subjects, city, qual, exp):
+    """Send welcome email to a newly onboarded teacher"""
+    first_name = teacher_name.strip().split(" ")[0]
+    html_body = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"/>
+<style>
+  body {{ margin:0; padding:0; background:#f0f4ff; font-family: 'Segoe UI', Arial, sans-serif; }}
+  .wrapper {{ max-width:600px; margin:32px auto; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 4px 32px rgba(27,79,138,0.10); }}
+  .header {{ background: linear-gradient(135deg, #0a1628 0%, #1B4F8A 60%, #2563eb 100%); padding:40px 36px 28px; text-align:center; }}
+  .logo {{ color:#fff; font-size:32px; font-weight:900; letter-spacing:4px; }}
+  .logo span {{ color:#60a5fa; }}
+  .tagline {{ color:#93c5fd; font-size:13px; letter-spacing:2px; margin-top:6px; }}
+  .hero {{ background: linear-gradient(90deg, #1B4F8A, #2563eb); padding:28px 36px; text-align:center; }}
+  .welcome-text {{ color:#fff; font-size:22px; font-weight:700; }}
+  .welcome-text span {{ color:#fbbf24; }}
+  .body {{ padding:36px 36px 24px; }}
+  p {{ font-size:15px; color:#374151; line-height:1.7; margin:0 0 16px; }}
+  .info-box {{ background:#f0f7ff; border-left:4px solid #1B4F8A; border-radius:8px; padding:16px 20px; margin:20px 0; }}
+  .info-row {{ font-size:14px; color:#1e40af; margin:6px 0; }}
+  .check {{ color:#1B4F8A; font-weight:900; }}
+  .cta {{ text-align:center; margin:28px 0 16px; }}
+  .cta a {{ background: linear-gradient(135deg, #1B4F8A, #2563eb); color:#fff; padding:14px 36px; border-radius:30px; text-decoration:none; font-size:15px; font-weight:700; display:inline-block; }}
+  .footer {{ background:#0a1628; padding:20px 36px; text-align:center; }}
+  .footer p {{ color:#93c5fd; font-size:12px; margin:4px 0; }}
+  .footer a {{ color:#60a5fa; text-decoration:none; }}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <div class="logo">VAAN<span>YAN</span></div>
+    <div class="tagline">HOME TUITION PLATFORM</div>
+  </div>
+  <div class="hero">
+    <div class="welcome-text">Welcome to Vaanyan, <span>{first_name} Sir/Ma'am!</span> 🎉</div>
+  </div>
+  <div class="body">
+    <p>Dear <strong>{teacher_name}</strong>,</p>
+    <p>On behalf of the entire <strong style="color:#1B4F8A;">Vaanyan</strong> team, we warmly welcome you to our growing family of educators!</p>
+    <div class="info-box">
+      <div class="info-row">🎓 <strong>Qualification:</strong> {qual}</div>
+      <div class="info-row">📚 <strong>Subjects:</strong> {subjects}</div>
+      <div class="info-row">📍 <strong>City:</strong> {city}</div>
+      <div class="info-row">🕐 <strong>Experience:</strong> {exp}</div>
+    </div>
+    <p>Your profile is now <strong>live</strong> on Vaanyan. Students and parents in your area can discover and connect with you directly.</p>
+    <p><span class="check">✓</span> Direct connection with genuine students &amp; parents<br/>
+    <span class="check">✓</span> Transparent commission model — you keep most of what you earn<br/>
+    <span class="check">✓</span> Admin support for payments &amp; session tracking<br/>
+    <span class="check">✓</span> A trusted local brand parents rely on</p>
+    <div class="cta"><a href="https://vaanyan.com">Visit vaanyan.com →</a></div>
+    <p style="font-size:14px; color:#6b7280;">With warm regards,<br/><strong style="color:#1B4F8A;">The Vaanyan Team</strong></p>
+  </div>
+  <div class="footer">
+    <p>Empowering Education, One Student at a Time</p>
+    <p><a href="https://vaanyan.com">vaanyan.com</a></p>
+  </div>
+</div>
+</body>
+</html>"""
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = app.config['MAIL_USERNAME']
+        msg['To'] = teacher_email
+        msg['Subject'] = f"Welcome to Vaanyan Home Tuition Platform! 🎉"
+        msg.attach(MIMEText(html_body, 'html'))
+        server = smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT'])
+        server.starttls()
+        server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+        server.send_message(msg)
+        server.quit()
+        return True
+    except Exception as e:
+        print(f"Welcome email failed: {e}")
+        return False
 
+
+@app.route('/admin/send-welcome-emails', methods=['POST'])
+@login_required
+def send_welcome_emails():
+    user = get_current_user()
+    if user.role != 'admin':
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+    
+    teacher_ids = request.json.get('teacher_ids', [])
+    results = []
+    
+    for tid in teacher_ids:
+        teacher = User.query.get(tid)
+        if not teacher or teacher.role != 'teacher' or not teacher.teacher_profile:
+            results.append({'id': tid, 'success': False, 'error': 'Not found'})
+            continue
+        
+        tp = teacher.teacher_profile
+        success = send_welcome_email(
+            teacher_email=teacher.email,
+            teacher_name=f"{teacher.first_name} {teacher.last_name}",
+            subjects=tp.subjects.replace(',', ', '),
+            city=tp.city,
+            qual=tp.qualification,
+            exp=tp.experience
+        )
+        results.append({
+            'id': tid,
+            'name': f"{teacher.first_name} {teacher.last_name}",
+            'email': teacher.email,
+            'success': success
+        })
+    
+    return jsonify({'results': results})
 
 # ===== MAIN ROUTES =====
 
