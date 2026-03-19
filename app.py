@@ -38,6 +38,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'keepalives_idle': 30,
         'keepalives_interval': 5,
         'keepalives_count': 5,
+        'connect_timeout': 10,
     }
 }
 
@@ -237,6 +238,7 @@ def send_admin_notification(subject, body):
     except Exception as e:
         print(f"Email failed: {e}")
         return False
+
 def send_welcome_email(teacher_email, teacher_name, subjects, city, qual, exp):
     """Send welcome email to a newly onboarded teacher"""
     first_name = teacher_name.strip().split(" ")[0]
@@ -426,7 +428,6 @@ def student_registration():
         db.session.add(student_profile)
         db.session.commit()
 
-        # Send email notification
         send_admin_notification(
             subject=f"🎓 New Student Registered - {first_name} {last_name}",
             body=f"""
@@ -508,7 +509,6 @@ def teacher_registration():
         db.session.add(teacher_profile)
         db.session.commit()
 
-        # Send email notification
         send_admin_notification(
             subject=f"👨‍🏫 New Teacher Registered - {first_name} {last_name}",
             body=f"""
@@ -715,7 +715,6 @@ def send_tutor_request():
     db.session.add(tutor_request)
     db.session.commit()
 
-    # Send email notification
     teacher = User.query.get(teacher_id)
     send_admin_notification(
         subject=f"🤝 New Connection Request - {user.first_name} {user.last_name} → {teacher.first_name} {teacher.last_name}",
@@ -936,7 +935,6 @@ def student_pay(cycle_id):
                 cycle.status = 'pending_verification'
                 db.session.commit()
 
-                # Send payment notification
                 send_admin_notification(
                     subject=f"💰 Payment Screenshot Uploaded - ₹{cycle.total_amount}",
                     body=f"""
@@ -1179,11 +1177,17 @@ def create_sample_data():
     db.session.commit()
 
 
-# ===== RUN APP =====
+# ===== SAFE STARTUP - SSL drop pe crash nahi hoga =====
 
 with app.app_context():
-    db.create_all()
-    create_sample_data()
+    try:
+        db.create_all()
+        create_sample_data()
+    except Exception as e:
+        print(f"Startup DB error (non-fatal): {e}")
+
+
+# ===== RUN APP =====
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8000)
+    app.run(debug=True, host='0.0.0.0', port=8000)s
