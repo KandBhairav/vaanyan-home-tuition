@@ -29,7 +29,16 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_pre_ping': True,
-    'pool_recycle': 300,
+    'pool_recycle': 280,
+    'pool_size': 5,
+    'max_overflow': 2,
+    'connect_args': {
+        'sslmode': 'require',
+        'keepalives': 1,
+        'keepalives_idle': 30,
+        'keepalives_interval': 5,
+        'keepalives_count': 5,
+    }
 }
 
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)
