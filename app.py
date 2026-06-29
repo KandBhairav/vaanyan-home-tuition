@@ -19,8 +19,14 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'vaanyan-home-tuition-se
 # Database Configuration - PostgreSQL for production, SQLite for local
 database_url = os.environ.get('DATABASE_URL')
 if database_url:
+    # Heroku/Render sometimes use postgres:// — fix to postgresql://
     if database_url.startswith('postgres://'):
         database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    # Ensure sslmode=require is in the URL itself (needed for Supabase/Render)
+    # Do NOT put sslmode in connect_args — Supabase rejects that approach
+    if 'sslmode' not in database_url:
+        separator = '&' if '?' in database_url else '?'
+        database_url = database_url + separator + 'sslmode=require'
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///vaanyan_tuition.db'
@@ -28,19 +34,14 @@ else:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 if database_url:
+    # Supabase / Render PostgreSQL compatible engine options.
+    # connect_args is intentionally empty — SSL is handled via the URL above.
+    # keepalives and sslmode in connect_args cause failures with Supabase's pooler.
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-        'pool_pre_ping': True,
-        'pool_recycle': 280,
+        'pool_pre_ping': True,   # Detects stale/dropped connections before use
+        'pool_recycle': 280,     # Recycle before Render's 300s idle timeout
         'pool_size': 5,
         'max_overflow': 2,
-        'connect_args': {
-            'sslmode': 'require',
-            'keepalives': 1,
-            'keepalives_idle': 30,
-            'keepalives_interval': 5,
-            'keepalives_count': 5,
-            'connect_timeout': 10,
-        }
     }
 else:
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
@@ -48,7 +49,8 @@ else:
     }
 
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)
-app.config['SESSION_COOKIE_SECURE'] = True
+# SESSION_COOKIE_SECURE must only be True in production (HTTPS); False for local HTTP
+app.config['SESSION_COOKIE_SECURE'] = bool(database_url)
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
@@ -64,6 +66,30 @@ ADMIN_EMAILS = ['mahapatravinayak@gmail.com', 'nitin.rawat2@gmail.com']
 
 # Initialize database
 db = SQLAlchemy(app)
+
+
+# ===== DATABASE SESSION CLEANUP =====
+# This ensures a failed DB transaction never poisons subsequent requests.
+# Flask-SQLAlchemy normally handles this, but explicit teardown is a safety net.
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    if exception:
+        db.session.rollback()
+    db.session.remove()
+
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    """Roll back any broken DB transaction on 500 so next request is clean."""
+    db.session.rollback()
+    return render_template('500.html'), 500
+
+
+@app.errorhandler(Exception)
+def handle_unhandled_exception(e):
+    """Catch-all: roll back DB session and re-raise so Flask can log it."""
+    db.session.rollback()
+    raise e
 
 
 # ===== DATABASE MODELS =====
@@ -322,6 +348,92 @@ def send_welcome_email(teacher_email, teacher_name, subjects, city, qual, exp):
         return False
 
 
+def send_signup_welcome_email(user_email, first_name, role):
+    """Send a welcome email to any newly registered user (student or teacher)."""
+    role_label = 'Student' if role == 'student' else 'Teacher'
+    role_emoji = '🎓' if role == 'student' else '👨‍🏫'
+    role_color = '#6b21a8' if role == 'student' else '#b45309'
+    role_gradient = 'linear-gradient(135deg, #6b21a8, #9333ea)' if role == 'student' else 'linear-gradient(135deg, #b45309, #d97706)'
+    role_message = (
+        'You can now find the best tutors near you, request sessions, and start learning!'
+        if role == 'student' else
+        'Your profile is now live on Vaanyan. Students and parents in your area can discover and connect with you directly!'
+    )
+    dashboard_url = 'https://vaanyan.com/student/dashboard' if role == 'student' else 'https://vaanyan.com/teacher/dashboard'
+
+    html_body = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"/>
+<style>
+  body {{ margin:0; padding:0; background:#f0f4ff; font-family: 'Segoe UI', Arial, sans-serif; }}
+  .wrapper {{ max-width:600px; margin:32px auto; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 4px 32px rgba(27,79,138,0.10); }}
+  .header {{ background: linear-gradient(135deg, #0a1628 0%, #1B4F8A 60%, #2563eb 100%); padding:40px 36px 28px; text-align:center; }}
+  .logo {{ color:#fff; font-size:32px; font-weight:900; letter-spacing:4px; }}
+  .logo span {{ color:#60a5fa; }}
+  .tagline {{ color:#93c5fd; font-size:13px; letter-spacing:2px; margin-top:6px; }}
+  .hero {{ background: {role_gradient}; padding:28px 36px; text-align:center; }}
+  .welcome-text {{ color:#fff; font-size:22px; font-weight:700; }}
+  .welcome-text span {{ color:#fbbf24; }}
+  .body {{ padding:36px 36px 24px; }}
+  p {{ font-size:15px; color:#374151; line-height:1.7; margin:0 0 16px; }}
+  .role-badge {{ display:inline-block; background:{role_gradient}; color:#fff; font-size:13px; font-weight:700; padding:4px 16px; border-radius:20px; margin-bottom:16px; }}
+  .features {{ background:#f8f9ff; border-radius:10px; padding:20px 24px; margin:20px 0; }}
+  .feature {{ font-size:14px; color:#374151; margin:8px 0; }}
+  .cta {{ text-align:center; margin:28px 0 16px; }}
+  .cta a {{ background: linear-gradient(135deg, #1B4F8A, #2563eb); color:#fff; padding:14px 36px; border-radius:30px; text-decoration:none; font-size:15px; font-weight:700; display:inline-block; }}
+  .footer {{ background:#0a1628; padding:20px 36px; text-align:center; }}
+  .footer p {{ color:#93c5fd; font-size:12px; margin:4px 0; }}
+  .footer a {{ color:#60a5fa; text-decoration:none; }}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <div class="logo">VAAN<span>YAN</span></div>
+    <div class="tagline">HOME TUITION PLATFORM</div>
+  </div>
+  <div class="hero">
+    <div class="welcome-text">Welcome to Vaanyan, <span>{first_name}!</span> 🎉</div>
+  </div>
+  <div class="body">
+    <p>Dear <strong>{first_name}</strong>,</p>
+    <div><span class="role-badge">{role_emoji} {role_label}</span></div>
+    <p>On behalf of the entire <strong style="color:#1B4F8A;">Vaanyan</strong> team, we warmly welcome you to our growing family!</p>
+    <p>{role_message}</p>
+    <div class="features">
+      <div class="feature">✅ Verified & trusted platform</div>
+      <div class="feature">✅ Direct connect with students & teachers</div>
+      <div class="feature">✅ Transparent sessions & payment tracking</div>
+      <div class="feature">✅ Admin support always available</div>
+    </div>
+    <div class="cta"><a href="{dashboard_url}">Go to My Dashboard →</a></div>
+    <p style="font-size:14px; color:#6b7280;">With warm regards,<br/><strong style="color:#1B4F8A;">The Vaanyan Team</strong></p>
+  </div>
+  <div class="footer">
+    <p>Empowering Education, One Student at a Time</p>
+    <p><a href="https://vaanyan.com">vaanyan.com</a></p>
+  </div>
+</div>
+</body>
+</html>"""
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = app.config['MAIL_USERNAME']
+        msg['To'] = user_email
+        msg['Subject'] = f"Welcome to Vaanyan Home Tuition! {role_emoji} You're all set!"
+        msg.attach(MIMEText(html_body, 'html'))
+        server = smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT'])
+        server.starttls()
+        server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+        server.send_message(msg)
+        server.quit()
+        print(f"Signup welcome email sent to {user_email}")
+        return True
+    except Exception as e:
+        print(f"Signup welcome email failed: {e}")
+        return False
+
+
 @app.route('/admin/send-welcome-emails', methods=['POST'])
 @login_required
 def send_welcome_emails():
@@ -476,8 +588,15 @@ def student_registration():
             """
         )
 
-        flash('Registration successful! Please login', 'success')
-        return redirect(url_for('login'))
+        # Send welcome email to the new student
+        send_signup_welcome_email(email, first_name, 'student')
+
+        # Auto-login: set session so user lands directly on their dashboard
+        session['user_id'] = user.id
+        session['user_role'] = user.role
+        session.permanent = True
+        flash(f'Welcome to Vaanyan, {first_name}! 🎉 Your account is ready.', 'success')
+        return redirect(url_for('student_dashboard'))
     return render_template('student_registration.html')
 
 
@@ -569,8 +688,15 @@ def teacher_registration():
             """
         )
 
-        flash('Registration successful! Please login', 'success')
-        return redirect(url_for('login'))
+        # Send welcome email to the new teacher
+        send_signup_welcome_email(email, first_name, 'teacher')
+
+        # Auto-login: set session so teacher lands directly on their dashboard
+        session['user_id'] = user.id
+        session['user_role'] = user.role
+        session.permanent = True
+        flash(f'Welcome to Vaanyan, {first_name}! 🎉 Your profile is now live.', 'success')
+        return redirect(url_for('teacher_dashboard'))
     return render_template('teacher_registration.html')
 
 
@@ -1182,14 +1308,17 @@ def create_sample_data():
     db.session.commit()
 
 
-# ===== SAFE STARTUP - SSL drop pe crash nahi hoga =====
+# ===== SAFE STARTUP =====
 
 with app.app_context():
     try:
         db.create_all()
         create_sample_data()
+        print("✅ Database initialized successfully.")
     except Exception as e:
-        print(f"Startup DB error (non-fatal): {e}")
+        import traceback
+        print(f"⚠️  Startup DB error (non-fatal): {e}")
+        traceback.print_exc()
 
 
 # ===== RUN APP =====
