@@ -9,6 +9,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import csv
 from io import StringIO
+import threading
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -588,8 +589,8 @@ def student_registration():
             """
         )
 
-        # Send welcome email to the new student
-        send_signup_welcome_email(email, first_name, 'student')
+        # Send welcome email to the new student (in background thread to avoid blocking)
+        threading.Thread(target=send_signup_welcome_email, args=(email, first_name, 'student'), daemon=True).start()
 
         # Auto-login: set session so user lands directly on their dashboard
         session['user_id'] = user.id
@@ -688,8 +689,8 @@ def teacher_registration():
             """
         )
 
-        # Send welcome email to the new teacher
-        send_signup_welcome_email(email, first_name, 'teacher')
+        # Send welcome email to the new teacher (in background thread to avoid blocking)
+        threading.Thread(target=send_signup_welcome_email, args=(email, first_name, 'teacher'), daemon=True).start()
 
         # Auto-login: set session so teacher lands directly on their dashboard
         session['user_id'] = user.id
